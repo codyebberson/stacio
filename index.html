@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0" />
+    <meta name="theme-color" content="#000" />
+    <title>Stacio</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            overflow: hidden;
+        }
+
+        canvas {
+            position: absolute;
+            image-rendering: pixelated;
+        }
+
+    </style>
+</head>
+
+<body>
+    <canvas width="256" height="144"></canvas>
+    <script src="constants.js"></script>
+    <script src="keyboard.js"></script>
+    <script src="maps.js"></script>
+    <script src="glutils.js"></script>
+    <script src="tilemap.js"></script>
+    <script src="sprites.js"></script>
+    <script src="dialog.js"></script>
+    <script src="quests.js"></script>
+    <script src="game.js"></script>
+</body>
+
+</html>
