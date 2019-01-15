@@ -102,6 +102,8 @@ function main() {
     window.addEventListener('resize', handleResizeEvent, false);
     handleResizeEvent();
 
+    canvas.addEventListener('touchend', handleTouches, { passive: true });
+
     requestAnimationFrame(update);
 }
 
@@ -131,6 +133,12 @@ function handleResizeEvent() {
 }
 
 function handleTouches(e) {
+    e.preventDefault();
+
+    if (!document.fullscreenElement) {
+        canvas.requestFullscreen();
+        return;
+    }
 }
 
 function handlePlayerInput() {
