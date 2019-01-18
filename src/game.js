@@ -102,7 +102,8 @@ function main() {
     window.addEventListener('resize', handleResizeEvent, false);
     handleResizeEvent();
 
-    canvas.addEventListener('touchend', handleTouches, { passive: true });
+    initMouse(canvas);
+    // canvas.addEventListener('touchend', handleTouches, { passive: true });
 
     requestAnimationFrame(update);
 }
@@ -132,14 +133,14 @@ function handleResizeEvent() {
     canvas.style.height = Math.floor(scale * 144.0) + 'px';
 }
 
-function handleTouches(e) {
-    e.preventDefault();
+// function handleTouches(e) {
+//     e.preventDefault();
 
-    if (!document.fullscreenElement) {
-        canvas.requestFullscreen();
-        return;
-    }
-}
+//     if (!document.fullscreenElement) {
+//         canvas.requestFullscreen();
+//         return;
+//     }
+// }
 
 function handlePlayerInput() {
     if (keys[KEY_NUMPAD_1]) {
@@ -497,6 +498,10 @@ function render() {
         if (effect.frame >= 18) {
             effects.splice(i, 1);
         }
+    }
+
+    if (mouse.down) {
+        drawTexture(mouse.x - 7, mouse.y - 7, 624, 144, 16, 16);
     }
 
     renderDialog();
