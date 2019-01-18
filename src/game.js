@@ -133,38 +133,29 @@ function handleResizeEvent() {
     canvas.style.height = Math.floor(scale * 144.0) + 'px';
 }
 
-// function handleTouches(e) {
-//     e.preventDefault();
-
-//     if (!document.fullscreenElement) {
-//         canvas.requestFullscreen();
-//         return;
-//     }
-// }
-
 function handlePlayerInput() {
-    if (keys[KEY_NUMPAD_1]) {
-        tryMoveOrAttack(player, -WALK_SPEED, WALK_SPEED, DIRECTION_LEFT);
+    const playerTileX = (player.x / TILE_SIZE) | 0;
+    const playerTileY = (player.y / TILE_SIZE) | 0;
+    const mouseTileX = ((viewport.x + mouse.x) / TILE_SIZE) | 0;
+    const mouseTileY = ((viewport.y + mouse.y) / TILE_SIZE) | 0;
+    const down = keys[KEY_NUMPAD_2] || keys[KEY_DOWN] || (mouse.down && mouseTileY > playerTileY);
+    const left = keys[KEY_NUMPAD_4] || keys[KEY_LEFT] || (mouse.down && mouseTileX < playerTileX);
+    const right = keys[KEY_NUMPAD_6] || keys[KEY_RIGHT] || (mouse.down && mouseTileX > playerTileX);
+    const up = keys[KEY_NUMPAD_8] || keys[KEY_UP] || (mouse.down && mouseTileY < playerTileY);
 
-    } else if (keys[KEY_NUMPAD_2] || keys[KEY_DOWN]) {
+    if (down) {
         tryMoveOrAttack(player, 0, WALK_SPEED, DIRECTION_DOWN);
 
-    } else if (keys[KEY_NUMPAD_3]) {
-        tryMoveOrAttack(player, WALK_SPEED, WALK_SPEED, DIRECTION_RIGHT);
-
-    } else if (keys[KEY_NUMPAD_4] || keys[KEY_LEFT]) {
+    } else if (left) {
         tryMoveOrAttack(player, -WALK_SPEED, 0, DIRECTION_LEFT);
 
     } else if (keys[KEY_NUMPAD_5]) {
         player.ap = 0;
 
-    } else if (keys[KEY_NUMPAD_6] || keys[KEY_RIGHT]) {
+    } else if (right) {
         tryMoveOrAttack(player, WALK_SPEED, 0, DIRECTION_RIGHT);
 
-    } else if (keys[KEY_NUMPAD_7]) {
-        tryMoveOrAttack(player, -WALK_SPEED, -WALK_SPEED, DIRECTION_LEFT);
-
-    } else if (keys[KEY_NUMPAD_8] || keys[KEY_UP]) {
+    } else if (up) {
         tryMoveOrAttack(player, 0, -WALK_SPEED, DIRECTION_UP);
 
     } else if (keys[KEY_NUMPAD_9]) {
@@ -186,12 +177,6 @@ function doAi(entity) {
         entity.ap = 0;
         return;
     }
-
-    // if (Math.hypot(entity.x - player.x, entity.y - player.y) > 256) {
-    //     // Too far away
-    //     entity.ap = 0;
-    //     return;
-    // }
 
     if (Math.abs(entity.x - player.x) > 144 || Math.abs(entity.y - player.y) > 96) {
         // Too far away
@@ -350,33 +335,18 @@ function tryDialogOption(index) {
 
     const option = dialog.options[index];
     if (option.actionType === 'dialog') {
-        // dialogState.visible = true;
-        // dialogState.index = option.nextDialogIndex;
-        // dialogState.startTime = t;
-        // dialogState.skip = false;
         showDialog(option.nextDialogIndex);
     } else if (option.actionType === 'quest') {
-        // dialogState.visible = false;
         hideDialog();
         startQuest(quests[option.questIndex]);
     } else {
-        // dialogState.visible = false;
         hideDialog();
     }
 }
 
 function update() {
     if (dialogState.visible) {
-        if (t - dialogState.startTime > 60) {
-            if (keys[KEY_SPACE]) {
-                dialogState.skip = true;
-            } else if (keys[KEY_1]) {
-                tryDialogOption(0);
-            } else if (keys[KEY_2]) {
-                tryDialogOption(1);
-            }
-        }
-
+        handleDialogInput();
     } else {
         while (true) {
             const currEntity = entities[currEntityIndex];
@@ -395,9 +365,6 @@ function update() {
                 }
                 currEntity.animationCount--;
                 if (currEntity.animationCount === 0) {
-                    // currEntity.dx = 0;
-                    // currEntity.dy = 0;
-                    // currEntity.ap--;
                     endMove(currEntity);
                 }
             }
@@ -502,6 +469,20 @@ function render() {
 
     if (mouse.down) {
         drawTexture(mouse.x - 7, mouse.y - 7, 624, 144, 16, 16);
+
+        const mouseTileX = ((viewport.x + mouse.x) / TILE_SIZE) | 0;
+        const mouseTileY = ((viewport.y + mouse.y) / TILE_SIZE) | 0;
+
+        const highlightX = mouseTileX * TILE_SIZE - viewport.x;
+        const highlightY = mouseTileY * TILE_SIZE - viewport.y;
+
+        let tx = 640;
+        let ty = 176;
+        if (isSolid(mouseTileX, mouseTileY)) {
+            tx = 688;
+        }
+
+        drawTexture(highlightX, highlightY, tx, ty, 16, 16);
     }
 
     renderDialog();

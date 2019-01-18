@@ -126,3 +126,18 @@ function renderDialog() {
         }
     }
 }
+
+function handleDialogInput() {
+    if (t - dialogState.startTime < 30) {
+        // Wait 0.5 seconds for dialog to warm up
+        return;
+    }
+
+    if (keys[KEY_SPACE]) {
+        dialogState.skip = true;
+    } else if (keys[KEY_1] || (mouse.down && mouse.x >= 100 && mouse.x < 140 && mouse.y >= 20 && mouse.y < 30)) {
+        tryDialogOption(0);
+    } else if (keys[KEY_2] || (mouse.down && mouse.x >= 150 && mouse.x < 190 && mouse.y >= 20 && mouse.y < 30)) {
+        tryDialogOption(1);
+    }
+}
