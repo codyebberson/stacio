@@ -90,3 +90,7 @@ function updatePosition(clientX, clientY) {
     mouse.x = (SCREEN_WIDTH * (clientX - rect.left) / rect.width) | 0;
     mouse.y = (SCREEN_HEIGHT * (clientY - rect.top) / rect.height) | 0;
 }
+
+function isMouseInRect(x, y, w, h) {
+    return mouse.x >= x && mouse.x < x + w && mouse.y >= y && mouse.y < y + h;
+}

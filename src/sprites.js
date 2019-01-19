@@ -194,6 +194,9 @@ function drawSprites() {
         return;
     }
 
+    // Tell it to use our program (pair of shaders)
+    gl.useProgram(program);
+
     viewportSizeBuffer[0] = SCREEN_WIDTH;
     viewportSizeBuffer[1] = SCREEN_HEIGHT;
     gl.uniform2fv(viewportSizeLocation, viewportSizeBuffer);

@@ -107,22 +107,26 @@ function hideDialog() {
 }
 
 function renderDialog() {
-    if (dialogState.visible) {
-        // Draw the dialog frame
-        drawTexture(48, 0, 512, 256, 208, 32);
+    if (!dialogState.visible) {
+        return;
+    }
 
-        // Draw the speaker avatar
-        drawTexture(50, -2, 128, 608, 32, 32);
+    const dialogWidth = 160;
+    const dialogHeight = 160;
+    const dialogX = ((SCREEN_WIDTH - dialogWidth) / 2) | 0;
+    const dialogY = ((SCREEN_HEIGHT - dialogHeight) / 2) | 0;
 
-        const dialog = dialogs[dialogState.index];
-        const openTime = t - dialogState.startTime;
-        const len = dialogState.skip ? dialog.msg.length : Math.min(dialog.msg.length, Math.floor(openTime / 3));
-        const msg = dialog.msg.substr(0, len);
-        drawString(msg, 80, 2);
-        if (len === dialog.msg.length) {
-            for (let i = 0; i < dialog.options.length; i++) {
-                drawString(dialog.options[i].text, 100 + i * 50, 20);
-            }
+    // Draw the speaker avatar
+    drawTexture(dialogX + 64, dialogY, 128, 608, 32, 32);
+
+    const dialog = dialogs[dialogState.index];
+    const openTime = t - dialogState.startTime;
+    const len = dialogState.skip ? dialog.msg.length : Math.min(dialog.msg.length, Math.floor(openTime / 2));
+    const msg = dialog.msg.substr(0, len);
+    drawString(msg, dialogX, dialogY + 32);
+    if (len === dialog.msg.length) {
+        for (let i = 0; i < dialog.options.length; i++) {
+            drawString(dialog.options[i].text, dialogX, dialogY + 64 + i * 16);
         }
     }
 }
@@ -133,11 +137,16 @@ function handleDialogInput() {
         return;
     }
 
+    const dialogWidth = 160;
+    const dialogHeight = 160;
+    const dialogX = ((SCREEN_WIDTH - dialogWidth) / 2) | 0;
+    const dialogY = ((SCREEN_HEIGHT - dialogHeight) / 2) | 0;
+
     if (keys[KEY_SPACE]) {
         dialogState.skip = true;
-    } else if (keys[KEY_1] || (mouse.down && mouse.x >= 100 && mouse.x < 140 && mouse.y >= 20 && mouse.y < 30)) {
+    } else if (keys[KEY_1] || (mouse.down && isMouseInRect(dialogX, dialogY + 64, 80, 8))) {
         tryDialogOption(0);
-    } else if (keys[KEY_2] || (mouse.down && mouse.x >= 150 && mouse.x < 190 && mouse.y >= 20 && mouse.y < 30)) {
+    } else if (keys[KEY_2] || (mouse.down && isMouseInRect(dialogX, dialogY + 80, 80, 8))) {
         tryDialogOption(1);
     }
 }

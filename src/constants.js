@@ -35,9 +35,6 @@ const DIRECTION_LEFT = 3;
 const SPRITE_WIDTH = 16;
 const SPRITE_HEIGHT = 16;
 
-const WALK_COUNT = 8;
-const WALK_SPEED = TILE_SIZE / WALK_COUNT;
-
 const ATTACK_COUNT = 18;
 
 const ENTITY_TYPE_PLAYER = 0;

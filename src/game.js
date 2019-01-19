@@ -19,6 +19,7 @@ const player = {
     hp: 100,
     ap: 1,
     animationCount: 0,
+    walkSpeed: 2,
     target: null,
     path: null,
     pathIndex: 0
@@ -60,7 +61,8 @@ for (let i = 1; i < rooms.length; i++) {
         direction: DIRECTION_DOWN,
         hp: 10,
         ap: 1,
-        animationCount: 0
+        animationCount: 0,
+        walkSpeed: 4
     });
 
     if (i === 8) {
@@ -115,15 +117,9 @@ function main() {
  * Updates canvas size.
  */
 function handleResizeEvent() {
-    let width = window.innerWidth;
-    let height = window.innerHeight;
-
-    let scale = 1.0;
-    if (width > height) {
-        scale = Math.ceil(height / 160.0);
-    } else {
-        scale = Math.ceil(width / 160.0);
-    }
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const scale = Math.max(1, Math.min(Math.floor(width / 160.0), Math.floor(height / 160.0)));
 
     SCREEN_WIDTH = Math.round(width / scale);
     SCREEN_HEIGHT = Math.round(height / scale);
@@ -138,6 +134,11 @@ function handleResizeEvent() {
 }
 
 function handlePlayerInput() {
+    if (player.hp <= 0) {
+        player.ap = 0;
+        return;
+    }
+
     const playerTileX = (player.x / TILE_SIZE) | 0;
     const playerTileY = (player.y / TILE_SIZE) | 0;
 
@@ -170,22 +171,19 @@ function handlePlayerInput() {
     const up = keys[KEY_NUMPAD_8] || keys[KEY_UP] || (nextStep && nextStep.y < playerTileY);
 
     if (down) {
-        tryMoveOrAttack(player, 0, WALK_SPEED, DIRECTION_DOWN);
+        tryMoveOrAttack(player, 0, player.walkSpeed, DIRECTION_DOWN);
 
     } else if (left) {
-        tryMoveOrAttack(player, -WALK_SPEED, 0, DIRECTION_LEFT);
+        tryMoveOrAttack(player, -player.walkSpeed, 0, DIRECTION_LEFT);
 
     } else if (keys[KEY_NUMPAD_5]) {
         player.ap = 0;
 
     } else if (right) {
-        tryMoveOrAttack(player, WALK_SPEED, 0, DIRECTION_RIGHT);
+        tryMoveOrAttack(player, player.walkSpeed, 0, DIRECTION_RIGHT);
 
     } else if (up) {
-        tryMoveOrAttack(player, 0, -WALK_SPEED, DIRECTION_UP);
-
-    } else if (keys[KEY_NUMPAD_9]) {
-        tryMoveOrAttack(player, WALK_SPEED, -WALK_SPEED, DIRECTION_RIGHT);
+        tryMoveOrAttack(player, 0, -player.walkSpeed, DIRECTION_UP);
 
     } else if (keys[KEY_Z]) {
         effects.push({
@@ -210,19 +208,19 @@ function doAi(entity) {
         return;
     }
 
-    if (player.x < entity.x && tryMoveOrAttack(entity, -WALK_SPEED, 0, DIRECTION_LEFT)) {
+    if (player.x < entity.x && tryMoveOrAttack(entity, -entity.walkSpeed, 0, DIRECTION_LEFT)) {
         return;
     }
 
-    if (player.x > entity.x && tryMoveOrAttack(entity, WALK_SPEED, 0, DIRECTION_RIGHT)) {
+    if (player.x > entity.x && tryMoveOrAttack(entity, entity.walkSpeed, 0, DIRECTION_RIGHT)) {
         return;
     }
 
-    if (player.y < entity.y && tryMoveOrAttack(entity, 0, -WALK_SPEED, DIRECTION_UP)) {
+    if (player.y < entity.y && tryMoveOrAttack(entity, 0, -entity.walkSpeed, DIRECTION_UP)) {
         return;
     }
 
-    if (player.y > entity.y && tryMoveOrAttack(entity, 0, WALK_SPEED, DIRECTION_DOWN)) {
+    if (player.y > entity.y && tryMoveOrAttack(entity, 0, entity.walkSpeed, DIRECTION_DOWN)) {
         return;
     }
 
@@ -237,8 +235,9 @@ function tryMoveOrAttack(entity, dx, dy, direction) {
     // This is purely cosmetic
     entity.direction = direction;
 
-    const tx = Math.floor(entity.x / 16) + dx / WALK_SPEED;
-    const ty = Math.floor(entity.y / 16) + dy / WALK_SPEED;
+    const mag = Math.hypot(dx, dy);
+    const tx = Math.floor(entity.x / 16) + dx / mag;
+    const ty = Math.floor(entity.y / 16) + dy / mag;
     if (isSolid(tx, ty)) {
         return false;
     }
@@ -269,7 +268,7 @@ function tryMoveOrAttack(entity, dx, dy, direction) {
 
     entity.dx = dx;
     entity.dy = dy;
-    entity.animationCount = WALK_COUNT;
+    entity.animationCount = TILE_SIZE / Math.max(Math.abs(dx), Math.abs(dy));
     return true;
 }
 
@@ -344,7 +343,9 @@ function nextTurn() {
     if (currEntityIndex >= entities.length) {
         currEntityIndex = 0;
         for (let i = 0; i < entities.length; i++) {
-            entities[i].ap = 1;
+            if (entities[i].hp > 0) {
+                entities[i].ap = 1;
+            }
         }
     }
 }
@@ -445,16 +446,29 @@ function render() {
         viewport.y += 4 * Math.random() - 2;
     }
 
-    // Draw the tile map
-    tileMap.draw(viewport.x, viewport.y);
-
     // Reset sprite index buffers
     positionArrayIndex = 0;
     texcoordArrayIndex = 0;
     colorArrayIndex = 0;
 
-    // Tell it to use our program (pair of shaders)
-    gl.useProgram(program);
+    if (dialogState.visible) {
+        // // Tell it to use our program (pair of shaders)
+        // gl.useProgram(program);
+        renderDialog();
+    } else {
+        renderNormalMode();
+    }
+
+    drawSprites();
+    t++;
+}
+
+function renderNormalMode() {
+    // Draw the tile map
+    tileMap.draw(viewport.x, viewport.y);
+
+    // // Tell it to use our program (pair of shaders)
+    // gl.useProgram(program);
 
     for (let i = 0; i < items.length; i++) {
         const item = items[i];
@@ -513,12 +527,10 @@ function render() {
         drawTexture(highlightX, highlightY, tx, ty, 16, 16);
     }
 
-    renderDialog();
-
     let frameY = 0;
     for (let i = 0; i < entities.length; i++) {
         const entity = entities[i];
-        if (entity.hp <= 0) {
+        if (entity !== player && entity.hp <= 0) {
             continue;
         }
         if (Math.abs(entity.x - player.x) > 144 || Math.abs(entity.y - player.y) > 96) {
@@ -530,9 +542,9 @@ function render() {
     }
 
     if (questLog.length > 0) {
-        drawString('OBJECTIVES:', 200, 32);
+        drawString('OBJECTIVES:', SCREEN_WIDTH - 60, 0);
         for (let i = 0; i < questLog.length; i++) {
-            drawString(questLog[i].title, 200, 40 + 8 * i);
+            drawString(questLog[i].title, SCREEN_WIDTH - 60, 8 + 8 * i);
         }
     }
 
@@ -540,10 +552,6 @@ function render() {
     for (let i = 0; i < messages.length; i++) {
         drawString(messages[i].text, 0, messagesY + i * 8, messages[i].color);
     }
-
-    drawSprites();
-
-    t++;
 }
 
 main();
