@@ -1,7 +1,7 @@
 
-const dxs = [-1, 0, 1, -1, 1, -1, 0, 1];
-const dys = [-1, -1, -1, 0, 0, 1, 1, 1];
-const costs = [1.5, 1, 1.5, 1, 1, 1.5, 1, 1.5];
+const dxs = [0, -1, 1, 0];
+const dys = [-1, 0, 0, 1];
+const costs = [1, 1, 1, 1];
 
 /**
  * Calculates Dijkstra's algorithm.
@@ -11,10 +11,10 @@ const costs = [1.5, 1, 1.5, 1, 1, 1.5, 1, 1.5];
  * @param {!number=} opt_maxDist Optional maximum distance to examine.
  * @return {?Array} Array of steps if destination found; null otherwise.
  */
-export function computePath(source, dest, maxDist) {
+function computePath(source, dest, maxDist) {
     clearDijkstra(map, dest);
 
-    const sourceCell = map.grid[source.y][source.x];
+    const sourceCell = map.layers[0][source.y][source.x];
     sourceCell.g = 0.0;
 
     const q = [sourceCell];
@@ -30,9 +30,9 @@ export function computePath(source, dest, maxDist) {
             const x = u.x + dxs[i];
             const y = u.y + dys[i];
             if (x >= 0 && x < map.width && y >= 0 && y < map.height) {
-                const v = map.grid[y][x];
+                const v = map.layers[0][y][x];
                 const alt = u.g + costs[i];
-                if (alt < v.g && alt <= maxDist && !map.grid[y][x].blocked) {
+                if (alt < v.g && alt <= maxDist && !map.layers[0][y][x].blocked) {
                     v.g = alt;
                     v.prev = u;
                     q.push(v);
@@ -46,7 +46,7 @@ export function computePath(source, dest, maxDist) {
 function clearDijkstra(map, dest) {
     for (let y = 0; y < map.height; y++) {
         for (let x = 0; x < map.width; x++) {
-            const cell = map.grid[y][x];
+            const cell = map.layers[0][y][x];
             cell.g = Infinity;
             cell.h = Math.min(Math.abs(x - dest.x), Math.abs(y - dest.y));
             cell.prev = null;

@@ -1,8 +1,8 @@
 
-var canvas = null;
-var gl = null;
-var imageWidth = 0;
-var imageHeight = 0;
+let canvas = null;
+let gl = null;
+let imageWidth = 0;
+let imageHeight = 0;
 let animFrame = 0;
 let animDelay = 0;
 let currEntityIndex = 0;
@@ -19,7 +19,9 @@ const player = {
     hp: 100,
     ap: 1,
     animationCount: 0,
-    target: null
+    target: null,
+    path: null,
+    pathIndex: 0
 };
 
 const blaster = {
@@ -75,7 +77,7 @@ const effects = [];
 
 let screenShakeCountdown = 0;
 
-var tileMap = null;
+let tileMap = null;
 
 function main() {
     let canvases = document.querySelectorAll('canvas');
@@ -97,7 +99,7 @@ function main() {
     tileMap.spriteSheet = spriteTexture;
 
     for (let i = 0; i < MAP_LAYERS; i++) {
-        tileMap.layers.push(new TileMapLayer(gl, mapLayers[i], MAP_WIDTH, MAP_HEIGHT));
+        tileMap.layers.push(new TileMapLayer(gl, map.layers[i], MAP_WIDTH, MAP_HEIGHT));
     }
 
     window.addEventListener('resize', handleResizeEvent, false);
@@ -138,12 +140,34 @@ function handleResizeEvent() {
 function handlePlayerInput() {
     const playerTileX = (player.x / TILE_SIZE) | 0;
     const playerTileY = (player.y / TILE_SIZE) | 0;
-    const mouseTileX = ((viewport.x + mouse.x) / TILE_SIZE) | 0;
-    const mouseTileY = ((viewport.y + mouse.y) / TILE_SIZE) | 0;
-    const down = keys[KEY_NUMPAD_2] || keys[KEY_DOWN] || (mouse.upCount === 1 && mouseTileY > playerTileY);
-    const left = keys[KEY_NUMPAD_4] || keys[KEY_LEFT] || (mouse.upCount === 1 && mouseTileX < playerTileX);
-    const right = keys[KEY_NUMPAD_6] || keys[KEY_RIGHT] || (mouse.upCount === 1 && mouseTileX > playerTileX);
-    const up = keys[KEY_NUMPAD_8] || keys[KEY_UP] || (mouse.upCount === 1 && mouseTileY < playerTileY);
+
+    if (mouse.down) {
+        // Get path to current location
+        const mouseTileX = ((viewport.x + mouse.x) / TILE_SIZE) | 0;
+        const mouseTileY = ((viewport.y + mouse.y) / TILE_SIZE) | 0;
+        const target = getCell(mouseTileX, mouseTileY);
+        if (target !== player.target) {
+            const source = { x: playerTileX, y: playerTileY };
+            player.target = target;
+            player.path = computePath(source, player.target, 20);
+            player.pathIndex = 0;
+        }
+        return;
+    }
+
+    let nextStep = null;
+    if (player.path) {
+        nextStep = player.path[player.pathIndex];
+        while (nextStep && nextStep.x === playerTileX && nextStep.y === playerTileY) {
+            player.pathIndex++;
+            nextStep = player.pathIndex < player.path.length ? player.path[player.pathIndex] : null;
+        }
+    }
+
+    const down = keys[KEY_NUMPAD_2] || keys[KEY_DOWN] || (nextStep && nextStep.y > playerTileY);
+    const left = keys[KEY_NUMPAD_4] || keys[KEY_LEFT] || (nextStep && nextStep.x < playerTileX);
+    const right = keys[KEY_NUMPAD_6] || keys[KEY_RIGHT] || (nextStep && nextStep.x > playerTileX);
+    const up = keys[KEY_NUMPAD_8] || keys[KEY_UP] || (nextStep && nextStep.y < playerTileY);
 
     if (down) {
         tryMoveOrAttack(player, 0, WALK_SPEED, DIRECTION_DOWN);
