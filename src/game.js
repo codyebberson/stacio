@@ -116,21 +116,23 @@ function handleResizeEvent() {
     let width = window.innerWidth;
     let height = window.innerHeight;
 
-    let ratio = width / height;
     let scale = 1.0;
-
-    if (ratio > 16.0 / 9.0) {
-        // Wider
-        scale = height / 144.0;
+    if (width > height) {
+        scale = Math.ceil(height / 160.0);
     } else {
-        // Taller
-        scale = width / 256.0;
+        scale = Math.ceil(width / 160.0);
     }
 
+    SCREEN_WIDTH = Math.round(width / scale);
+    SCREEN_HEIGHT = Math.round(height / scale);
+    SCREEN_ASPECT_RATIO = SCREEN_WIDTH / SCREEN_HEIGHT;
+
+    canvas.width = SCREEN_WIDTH;
+    canvas.height = SCREEN_HEIGHT;
     canvas.style.left = '0';
     canvas.style.top = '0';
-    canvas.style.width = Math.floor(scale * 256.0) + 'px';
-    canvas.style.height = Math.floor(scale * 144.0) + 'px';
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
 }
 
 function handlePlayerInput() {
@@ -411,8 +413,8 @@ function render() {
         return;
     }
 
-    viewport.x = Math.max(0, player.x + 8 - 128);
-    viewport.y = Math.max(0, player.y + 8 - 72);
+    viewport.x = Math.max(0, player.x - ((SCREEN_WIDTH / 2) | 0) + 8);
+    viewport.y = Math.max(0, player.y - ((SCREEN_HEIGHT / 2) | 0) + 8);
 
     if (screenShakeCountdown-- > 0) {
         viewport.x += 4 * Math.random() - 2;
@@ -510,7 +512,7 @@ function render() {
         }
     }
 
-    const messagesY = 144 - messages.length * 8;
+    const messagesY = SCREEN_HEIGHT - messages.length * 8;
     for (let i = 0; i < messages.length; i++) {
         drawString(messages[i].text, 0, messagesY + i * 8, messages[i].color);
     }

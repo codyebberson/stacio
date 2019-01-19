@@ -10,6 +10,7 @@
 const BUFFER_SIZE = 65536;
 
 const spriteVertexShader =
+    'uniform vec2 u_viewportSize;' +
     'attribute vec2 a_position;' +
     'attribute vec2 a_texCoord;' +
     'attribute vec4 a_color;' +
@@ -18,7 +19,7 @@ const spriteVertexShader =
     'void main() {' +
 
     // convert the rectangle from pixels to 0.0 to 1.0
-    'vec2 zeroToOne = a_position / vec2(' + SCREEN_WIDTH + '.0, ' + SCREEN_HEIGHT + '.0);' +
+    'vec2 zeroToOne = a_position / u_viewportSize;' +
 
     // convert from 0->1 to 0->2
     'vec2 zeroToTwo = zeroToOne * 2.0;' +
@@ -50,14 +51,15 @@ let spriteFragmentShader =
     'gl_FragColor = texture2D(u_image, v_texCoord);' +
     'if (gl_FragColor.a < 0.1) discard;' +
     'if (v_color.a > 0.5) gl_FragColor = v_color;' +
-    // 'gl_FragColor = v_color;' +
     '}';
 
 let program = null;
+let viewportSizeLocation = null;
 let positionLocation = null;
 let texcoordLocation = null;
 let colorLocation = null;
 let resolutionLocation = null;
+let viewportSizeBuffer = [SCREEN_WIDTH, SCREEN_HEIGHT];
 let positionBuffer = null;
 let texcoordBuffer = null;
 let colorBuffer = null;
@@ -76,6 +78,8 @@ function initSprites() {
     positionBuffer = gl.createBuffer();
     texcoordBuffer = gl.createBuffer();
     colorBuffer = gl.createBuffer();
+
+    viewportSizeLocation = gl.getUniformLocation(program, "u_viewportSize");
 
     positionLocation = gl.getAttribLocation(program, 'a_position');
     // gl.enableVertexAttribArray(positionLocation);
@@ -189,6 +193,10 @@ function drawSprites() {
     if (!spriteTexture.loaded) {
         return;
     }
+
+    viewportSizeBuffer[0] = SCREEN_WIDTH;
+    viewportSizeBuffer[1] = SCREEN_HEIGHT;
+    gl.uniform2fv(viewportSizeLocation, viewportSizeBuffer);
 
     // Use the leonardo spriteTexture
     gl.activeTexture(gl.TEXTURE0);

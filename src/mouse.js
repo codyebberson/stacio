@@ -51,8 +51,6 @@ function handleTouchEvent(e) {
     e.preventDefault();
 
     if (e.type === 'touchend') {
-        // this.requestFullscreen();
-
         if (!document.fullscreenElement) {
             canvas.requestFullscreen();
             return;
@@ -74,8 +72,6 @@ function updatePosition(clientX, clientY) {
     // If the client rect is not the same aspect ratio as canvas,
     // then we are fullscreen.
     // Need to update client rect accordingly.
-
-    console.log('bounding rect', rect);
 
     const rectAspectRatio = rect.width / rect.height;
 
