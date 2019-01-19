@@ -202,8 +202,7 @@ function doAi(entity) {
         return;
     }
 
-    if (Math.abs(entity.x - player.x) > 144 || Math.abs(entity.y - player.y) > 96) {
-        // Too far away
+    if (!isVisible(entity)) {
         entity.ap = 0;
         return;
     }
@@ -228,6 +227,13 @@ function doAi(entity) {
     if (entity.dx === 0 && entity.dy === 0) {
         entity.ap = 0;
     }
+}
+
+function isVisible(entity) {
+    return entity.x + SPRITE_WIDTH >= viewport.x &&
+            entity.y + SPRITE_HEIGHT >= viewport.y &&
+            entity.x < viewport.x + SCREEN_WIDTH &&
+            entity.y < viewport.y + SCREEN_HEIGHT;
 }
 
 function tryMoveOrAttack(entity, dx, dy, direction) {
@@ -533,7 +539,7 @@ function renderNormalMode() {
         if (entity !== player && entity.hp <= 0) {
             continue;
         }
-        if (Math.abs(entity.x - player.x) > 144 || Math.abs(entity.y - player.y) > 96) {
+        if (!isVisible(entity)) {
             continue;
         }
         drawString(entity.name, 0, frameY);
