@@ -44,8 +44,7 @@ function TileMapLayer(gl, map, imageWidth, imageHeight, repeat) {
     let i = 0;
     for (let y = 0; y < imageHeight; y++) {
         for (let x = 0; x < imageWidth; x++) {
-            //let t = map[y * imageWidth + x];
-            let t = map[y][x];
+            let t = map[y][x].tile;
             if (t === 0) {
                 imageData[i++] = 255;
                 imageData[i++] = 255;

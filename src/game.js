@@ -18,7 +18,8 @@ const player = {
     direction: DIRECTION_DOWN,
     hp: 100,
     ap: 1,
-    animationCount: 0
+    animationCount: 0,
+    target: null
 };
 
 const blaster = {
@@ -103,7 +104,6 @@ function main() {
     handleResizeEvent();
 
     initMouse(canvas);
-    // canvas.addEventListener('touchend', handleTouches, { passive: true });
 
     requestAnimationFrame(update);
 }
@@ -138,10 +138,10 @@ function handlePlayerInput() {
     const playerTileY = (player.y / TILE_SIZE) | 0;
     const mouseTileX = ((viewport.x + mouse.x) / TILE_SIZE) | 0;
     const mouseTileY = ((viewport.y + mouse.y) / TILE_SIZE) | 0;
-    const down = keys[KEY_NUMPAD_2] || keys[KEY_DOWN] || (mouse.down && mouseTileY > playerTileY);
-    const left = keys[KEY_NUMPAD_4] || keys[KEY_LEFT] || (mouse.down && mouseTileX < playerTileX);
-    const right = keys[KEY_NUMPAD_6] || keys[KEY_RIGHT] || (mouse.down && mouseTileX > playerTileX);
-    const up = keys[KEY_NUMPAD_8] || keys[KEY_UP] || (mouse.down && mouseTileY < playerTileY);
+    const down = keys[KEY_NUMPAD_2] || keys[KEY_DOWN] || (mouse.upCount === 1 && mouseTileY > playerTileY);
+    const left = keys[KEY_NUMPAD_4] || keys[KEY_LEFT] || (mouse.upCount === 1 && mouseTileX < playerTileX);
+    const right = keys[KEY_NUMPAD_6] || keys[KEY_RIGHT] || (mouse.upCount === 1 && mouseTileX > playerTileX);
+    const up = keys[KEY_NUMPAD_8] || keys[KEY_UP] || (mouse.upCount === 1 && mouseTileY < playerTileY);
 
     if (down) {
         tryMoveOrAttack(player, 0, WALK_SPEED, DIRECTION_DOWN);
@@ -345,6 +345,8 @@ function tryDialogOption(index) {
 }
 
 function update() {
+    updateMouse();
+
     if (dialogState.visible) {
         handleDialogInput();
     } else {

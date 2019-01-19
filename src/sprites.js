@@ -109,9 +109,6 @@ function drawString(str, x, y, opt_color) {
             drawChar(lines[i].charCodeAt(j), x + j * 4, y + i * 8, opt_color);
         }
     }
-    // for (let i = 0; i < str.length; i++) {
-    //     drawChar(str.charCodeAt(i), x + i * 4, y, opt_color);
-    // }
 }
 
 /**
@@ -147,7 +144,7 @@ function drawTexture(x, y, u, v, w, h, opt_color) {
     let ty = v / spriteTexture.height;
     let tx2 = (u + w) / spriteTexture.width;
     let ty2 = (v + h) / spriteTexture.height;
-    let color = opt_color || 0; //0xFFFFFFFF;
+    let color = opt_color || 0;
 
     // First triangle
     positionArray[positionArrayIndex++] = x;

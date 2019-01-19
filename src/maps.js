@@ -23,12 +23,24 @@ const TILE_SILVER_WALL10 = TILE_SILVER_WALL1 + 9;
 
 const mapLayers = [];
 
+function Cell(x, y, tile) {
+    this.x = x;
+    this.y = y;
+    this.tile = tile;
+    this.blocked = true;
+    this.visible = false;
+    this.g = 0;
+    this.h = 0;
+    this.prev = null;
+}
+
 for (let i = 0; i < MAP_LAYERS; i++) {
     const layer = new Array(MAP_HEIGHT);
     for (let y = 0; y < MAP_HEIGHT; y++) {
         const row = new Array(MAP_WIDTH);
         for (let x = 0; x < MAP_WIDTH; x++) {
-            row[x] = TILE_EMPTY;
+            //row[x] = TILE_EMPTY;
+            row[x] = new Cell(x, y, TILE_EMPTY);
         }
         layer[y] = row;
     }
@@ -83,25 +95,16 @@ while (rooms.length < 20) {
     }
 }
 
+// Add walls around open floor
 for (let y = 0; y < MAP_HEIGHT; y++) {
     for (let x = 0; x < MAP_WIDTH; x++) {
-        // if (Math.random() > 0.5) {
-        //     mapLayers[0][y][x] = TILE_STEEL1;
-        // } else {
-        //     mapLayers[0][y][x] = TILE_STEEL2;
-        // }
-        // const north = y > 0 && mapLayers[0][y - 1][x]
-        // if (isSolid(x, y) && !isSolid(x, y + 1)) {
-
-        // }
-
         if (isSolid(x, y)) {
             if (!isSolid(x, y + 1)) {
                 // Half wall
-                mapLayers[0][y][x] = chooseBetween(TILE_SILVER_WALL1, TILE_SILVER_WALL6);
+                mapLayers[0][y][x].tile = chooseBetween(TILE_SILVER_WALL1, TILE_SILVER_WALL6);
             } else if (getTile(x, y) !== TILE_EMPTY && getTile(x, y + 1) === TILE_EMPTY) {
                 // Half wall
-                mapLayers[0][y][x] = chooseBetween(TILE_SILVER_WALL1, TILE_SILVER_WALL6);
+                mapLayers[0][y][x].tile = chooseBetween(TILE_SILVER_WALL1, TILE_SILVER_WALL6);
             } else if (!isSolid(x, y - 1) ||
                 !isSolid(x - 1, y) ||
                 !isSolid(x + 1, y) ||
@@ -110,7 +113,7 @@ for (let y = 0; y < MAP_HEIGHT; y++) {
                 !isSolid(x - 1, y + 1) ||
                 !isSolid(x + 1, y + 1)) {
                 // Full wall
-                mapLayers[0][y][x] = chooseBetween(TILE_SILVER_WALL7, TILE_SILVER_WALL10);
+                mapLayers[0][y][x].tile = chooseBetween(TILE_SILVER_WALL7, TILE_SILVER_WALL10);
             }
         }
     }
@@ -123,38 +126,23 @@ function createRoom(rect) {
     const y2 = rect.y2;
     for (let y = y1; y <= y2; y++) {
         for (let x = x1; x <= x2; x++) {
-            mapLayers[0][y][x] = chooseBetween(TILE_STEEL1, TILE_STEEL4);
+            mapLayers[0][y][x].tile = chooseBetween(TILE_STEEL1, TILE_STEEL4);
+            mapLayers[0][y][x].blocked = false;
         }
     }
-    // for (let x = x1; x <= x2; x++) {
-    //     mapLayers[0][y1][x] = chooseBetween(TILE_SILVER_WALL1, TILE_SILVER_WALL6);
-    // }
-    // for (let y = y1; y <= y2; y++) {
-    //     mapLayers[0][y][x1] = chooseBetween(TILE_SILVER_WALL7, TILE_SILVER_WALL10);
-    //     mapLayers[0][y][x2] = chooseBetween(TILE_SILVER_WALL7, TILE_SILVER_WALL10);
-    // }
-    // for (let x = x1; x <= x2; x++) {
-    //     mapLayers[0][y2][x] = chooseBetween(TILE_SILVER_WALL1, TILE_SILVER_WALL6);
-    // }
 }
 
 function createHTunnel(x1, x2, y) {
     for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
-        // map[y][x].blocked = false;
-        // map[y][x].blockSight = false;
-        // mapLayers[0][y - 1][x] = chooseBetween(TILE_SILVER_WALL1, TILE_SILVER_WALL6);
-        mapLayers[0][y + 0][x] = chooseBetween(TILE_STEEL1, TILE_STEEL4);
-        // mapLayers[0][y + 1][x] = chooseBetween(TILE_SILVER_WALL1, TILE_SILVER_WALL6);
+        mapLayers[0][y][x].tile = chooseBetween(TILE_STEEL1, TILE_STEEL4);
+        mapLayers[0][y][x].blocked = false;
     }
 }
 
 function createVTunnel(y1, y2, x) {
     for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) {
-        // map[y][x].blocked = false;
-        // map[y][x].blockSight = false;
-        // mapLayers[0][y][x - 1] = chooseBetween(TILE_SILVER_WALL7, TILE_SILVER_WALL10);
-        mapLayers[0][y][x + 0] = chooseBetween(TILE_STEEL1, TILE_STEEL4);
-        // mapLayers[0][y][x + 1] = chooseBetween(TILE_SILVER_WALL7, TILE_SILVER_WALL10);
+        mapLayers[0][y][x].tile = chooseBetween(TILE_STEEL1, TILE_STEEL4);
+        mapLayers[0][y][x].blocked = false;
     }
 }
 
@@ -166,11 +154,15 @@ function getTile(tx, ty) {
     if (tx < 0 || tx >= MAP_WIDTH || ty < 0 || ty >= MAP_HEIGHT) {
         return TILE_SILVER_WALL1;
     }
-    return mapLayers[0][ty][tx];
+    return mapLayers[0][ty][tx].tile;
 }
 
 function isSolid(tx, ty) {
-    const t = getTile(tx, ty);
-    // return t >= TILE_SILVER_WALL1 && t <= TILE_SILVER_WALL10;
-    return !(t >= TILE_STEEL1 && t <= TILE_STEEL4);
+    // const t = getTile(tx, ty);
+    // // return t >= TILE_SILVER_WALL1 && t <= TILE_SILVER_WALL10;
+    // return !(t >= TILE_STEEL1 && t <= TILE_STEEL4);
+    if (tx < 0 || tx >= MAP_WIDTH || ty < 0 || ty >= MAP_HEIGHT) {
+        return true;
+    }
+    return mapLayers[0][ty][tx].blocked;
 }

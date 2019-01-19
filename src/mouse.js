@@ -2,7 +2,9 @@
 const mouse = {
     x: 0,
     y: 0,
-    down: false
+    down: false,
+    downCount: 0,
+    upCount: 0
 };
 
 function initMouse(el) {
@@ -16,6 +18,16 @@ function initMouse(el) {
     el.addEventListener('touchend', touchEventHandler);
     el.addEventListener('touchcancel', touchEventHandler);
     el.addEventListener('touchmove', touchEventHandler);
+}
+
+function updateMouse() {
+    if (mouse.down) {
+        mouse.downCount++;
+        mouse.upCount = 0;
+    } else {
+        mouse.downCount = 0;
+        mouse.upCount++;
+    }
 }
 
 function handleMouseEvent(e) {

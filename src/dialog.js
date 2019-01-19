@@ -6,7 +6,7 @@ const dialogs = [
             'System check. Do you remember the mission?',
         options: [
             { text: 'ROGER', actionType: 'dialog', nextDialogIndex: 4 },
-            { text: 'UH WHAT', actionType: 'dialog', nextDialogIndex: 1 }
+            { text: 'UH WHAT?', actionType: 'dialog', nextDialogIndex: 1 }
         ],
     },
     {
