@@ -382,7 +382,7 @@ function update() {
 
     if (dialogState.visible) {
         handleDialogInput();
-    } else {
+    } else if (player.hp > 0) {
         while (true) {
             const currEntity = entities[currEntityIndex];
             if (currEntity.ap > 0 && currEntity.animationCount === 0) {
