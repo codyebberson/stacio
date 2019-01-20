@@ -144,9 +144,9 @@ function handleDialogInput() {
 
     if (keys[KEY_SPACE]) {
         dialogState.skip = true;
-    } else if (keys[KEY_1] || (mouse.down && isMouseInRect(dialogX, dialogY + 64, 80, 8))) {
+    } else if (keys[KEY_1] || (mouse.upCount === 1 && isMouseInRect(dialogX, dialogY + 64, 80, 8))) {
         tryDialogOption(0);
-    } else if (keys[KEY_2] || (mouse.down && isMouseInRect(dialogX, dialogY + 80, 80, 8))) {
+    } else if (keys[KEY_2] || (mouse.upCount === 1 && isMouseInRect(dialogX, dialogY + 80, 80, 8))) {
         tryDialogOption(1);
     }
 }

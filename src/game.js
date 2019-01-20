@@ -11,8 +11,8 @@ let t = 0;
 const player = {
     entityType: ENTITY_TYPE_PLAYER,
     name: 'Player',
-    x: rooms[0].getCenter().x * TILE_SIZE,
-    y: rooms[0].getCenter().y * TILE_SIZE,
+    x: sectors[0].rooms[0].getCenter().x * TILE_SIZE,
+    y: sectors[0].rooms[0].getCenter().y * TILE_SIZE,
     dx: 0,
     dy: 0,
     direction: DIRECTION_DOWN,
@@ -49,29 +49,33 @@ const viewport = {
     y: 0
 };
 
-for (let i = 1; i < rooms.length; i++) {
-    const center = rooms[i].getCenter();
-    entities.push({
-        entityType: ENTITY_TYPE_ALIEN,
-        name: 'Alien',
-        x: center.x * TILE_SIZE,
-        y: center.y * TILE_SIZE,
-        dx: 0,
-        dy: 0,
-        direction: DIRECTION_DOWN,
-        hp: 10,
-        ap: 1,
-        animationCount: 0,
-        walkSpeed: 4
-    });
-
-    if (i === 8) {
-        items.push({
-            entityType: ENTITY_TYPE_BLUE_KEYCARD,
-            name: 'Blue Key',
-            x: center.x * TILE_SIZE + 32,
-            y: center.y * TILE_SIZE + 32
+for (let j = 0; j < sectors.length; j++) {
+    const sector = sectors[j];
+    const rooms = sector.rooms;
+    for (let i = 1; i < rooms.length; i++) {
+        const center = rooms[i].getCenter();
+        entities.push({
+            entityType: ENTITY_TYPE_ALIEN,
+            name: 'Alien',
+            x: center.x * TILE_SIZE,
+            y: center.y * TILE_SIZE,
+            dx: 0,
+            dy: 0,
+            direction: DIRECTION_DOWN,
+            hp: 10,
+            ap: 1,
+            animationCount: 0,
+            walkSpeed: 4
         });
+
+        if (i === 8) {
+            items.push({
+                entityType: ENTITY_TYPE_BLUE_KEYCARD,
+                name: 'Blue Key',
+                x: center.x * TILE_SIZE + 32,
+                y: center.y * TILE_SIZE + 32
+            });
+        }
     }
 }
 
@@ -231,9 +235,9 @@ function doAi(entity) {
 
 function isVisible(entity) {
     return entity.x + SPRITE_WIDTH >= viewport.x &&
-            entity.y + SPRITE_HEIGHT >= viewport.y &&
-            entity.x < viewport.x + SCREEN_WIDTH &&
-            entity.y < viewport.y + SCREEN_HEIGHT;
+        entity.y + SPRITE_HEIGHT >= viewport.y &&
+        entity.x < viewport.x + SCREEN_WIDTH &&
+        entity.y < viewport.y + SCREEN_HEIGHT;
 }
 
 function tryMoveOrAttack(entity, dx, dy, direction) {
