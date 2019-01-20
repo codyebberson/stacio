@@ -50,13 +50,6 @@ function handleTouchEvent(e) {
     e.stopPropagation();
     e.preventDefault();
 
-    if (e.type === 'touchend') {
-        if (!document.fullscreenElement) {
-            canvas.requestFullscreen();
-            return;
-        }
-    }
-
     if (e.touches.length > 0) {
         const touch = e.touches[0];
         this.updatePosition(touch.clientX, touch.clientY);
