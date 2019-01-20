@@ -119,7 +119,7 @@ function main() {
 function handleResizeEvent() {
     const width = window.innerWidth;
     const height = window.innerHeight;
-    const scale = Math.max(1, Math.min(Math.floor(width / 160.0), Math.floor(height / 160.0)));
+    const scale = Math.max(1, Math.min(Math.floor(width / 144.0), Math.floor(height / 144.0)));
 
     SCREEN_WIDTH = Math.round(width / scale);
     SCREEN_HEIGHT = Math.round(height / scale);
