@@ -1,11 +1,7 @@
 
-const mouse = {
-    x: 0,
-    y: 0,
-    down: false,
-    downCount: 0,
-    upCount: 0
-};
+const mouse = new Input();
+mouse.x = 0;
+mouse.y = 0;
 
 function initMouse(el) {
     el.addEventListener('mousedown', handleMouseEvent);
@@ -21,13 +17,7 @@ function initMouse(el) {
 }
 
 function updateMouse() {
-    if (mouse.down) {
-        mouse.downCount++;
-        mouse.upCount = 0;
-    } else {
-        mouse.downCount = 0;
-        mouse.upCount++;
-    }
+    mouse.update();
 }
 
 function handleMouseEvent(e) {

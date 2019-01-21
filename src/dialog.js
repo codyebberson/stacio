@@ -142,11 +142,11 @@ function handleDialogInput() {
     const dialogX = ((SCREEN_WIDTH - dialogWidth) / 2) | 0;
     const dialogY = ((SCREEN_HEIGHT - dialogHeight) / 2) | 0;
 
-    if (keys[KEY_SPACE]) {
+    if (keys[KEY_SPACE].upCount === 1) {
         dialogState.skip = true;
-    } else if (keys[KEY_1] || (mouse.upCount === 1 && isMouseInRect(dialogX, dialogY + 64, 80, 8))) {
+    } else if (keys[KEY_1].upCount === 1 || (mouse.upCount === 1 && isMouseInRect(dialogX, dialogY + 64, 80, 8))) {
         tryDialogOption(0);
-    } else if (keys[KEY_2] || (mouse.upCount === 1 && isMouseInRect(dialogX, dialogY + 80, 80, 8))) {
+    } else if (keys[KEY_2].upCount === 1 || (mouse.upCount === 1 && isMouseInRect(dialogX, dialogY + 80, 80, 8))) {
         tryDialogOption(1);
     }
 }

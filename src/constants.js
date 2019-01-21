@@ -3,9 +3,12 @@ let SCREEN_WIDTH = 256;
 let SCREEN_HEIGHT = 144;
 let SCREEN_ASPECT_RATIO = SCREEN_WIDTH / SCREEN_HEIGHT;
 
+const TOOLBAR_HEIGHT = 16;
+
 const TILE_SIZE = 16;
 const TEXTURE_SIZE = 1024;
 
+const KEY_TAB = 9;
 const KEY_SPACE = 32;
 const KEY_LEFT = 37;
 const KEY_UP = 38;

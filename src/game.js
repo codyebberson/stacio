@@ -49,6 +49,8 @@ const viewport = {
     y: 0
 };
 
+let selectedEntity = null;
+
 for (let j = 0; j < sectors.length; j++) {
     const sector = sectors[j];
     const rooms = sector.rooms;
@@ -123,7 +125,13 @@ function main() {
 function handleResizeEvent() {
     const width = window.innerWidth;
     const height = window.innerHeight;
-    const scale = Math.max(1, Math.min(Math.floor(width / 144.0), Math.floor(height / 144.0)));
+    let scale = 1.0;
+
+    if (width > height) {
+        scale = Math.max(1, Math.min(Math.floor(width / 256.0), Math.floor(height / 144.0)));
+    } else {
+        scale = Math.max(1, Math.min(Math.floor(width / 144.0), Math.floor(height / 256.0)));
+    }
 
     SCREEN_WIDTH = Math.round(width / scale);
     SCREEN_HEIGHT = Math.round(height / scale);
@@ -145,17 +153,48 @@ function handlePlayerInput() {
 
     const playerTileX = (player.x / TILE_SIZE) | 0;
     const playerTileY = (player.y / TILE_SIZE) | 0;
+    let shootButton = false;
 
     if (mouse.down) {
-        // Get path to current location
-        const mouseTileX = ((viewport.x + mouse.x) / TILE_SIZE) | 0;
-        const mouseTileY = ((viewport.y + mouse.y) / TILE_SIZE) | 0;
-        const target = getCell(mouseTileX, mouseTileY);
-        if (target !== player.target) {
-            const source = { x: playerTileX, y: playerTileY };
-            player.target = target;
-            player.path = computePath(source, player.target, 20);
-            player.pathIndex = 0;
+        if (mouse.y > SCREEN_HEIGHT - TOOLBAR_HEIGHT) {
+            // Toolbar
+            if (mouse.x >= 0 && mouse.x < 32) {
+                shootButton = true;
+            }
+
+        } else {
+            // Get path to current location
+            const mouseTileX = ((viewport.x + mouse.x) / TILE_SIZE) | 0;
+            const mouseTileY = ((viewport.y + mouse.y) / TILE_SIZE) | 0;
+
+            selectedEntity = getEntityAt(mouseTileX, mouseTileY);
+            if (selectedEntity) {
+                player.target = null;
+                player.path = null;
+                return;
+            }
+
+            const target = getCell(mouseTileX, mouseTileY);
+            if (target !== player.target) {
+                const source = { x: playerTileX, y: playerTileY };
+                player.target = target;
+                player.path = computePath(source, player.target, 20);
+                player.pathIndex = 0;
+            }
+            return;
+        }
+    }
+
+    if (keys[KEY_TAB].upCount === 1) {
+        if (selectedEntity) {
+            const selectedIndex = entities.indexOf(selectedEntity);
+            let nextIndex = selectedIndex + 1;
+            if (nextIndex === entities.length - 1 || !isVisible(entities[nextIndex])) {
+                nextIndex = 1;
+            }
+            selectedEntity = entities[nextIndex];
+        } else {
+            selectedEntity = entities[1];
         }
         return;
     }
@@ -167,12 +206,18 @@ function handlePlayerInput() {
             player.pathIndex++;
             nextStep = player.pathIndex < player.path.length ? player.path[player.pathIndex] : null;
         }
+        if (!nextStep) {
+            player.target = null;
+            player.path = null;
+        }
     }
 
-    const down = keys[KEY_NUMPAD_2] || keys[KEY_DOWN] || (nextStep && nextStep.y > playerTileY);
-    const left = keys[KEY_NUMPAD_4] || keys[KEY_LEFT] || (nextStep && nextStep.x < playerTileX);
-    const right = keys[KEY_NUMPAD_6] || keys[KEY_RIGHT] || (nextStep && nextStep.x > playerTileX);
-    const up = keys[KEY_NUMPAD_8] || keys[KEY_UP] || (nextStep && nextStep.y < playerTileY);
+    const down = keys[KEY_NUMPAD_2].down || keys[KEY_DOWN].down || (nextStep && nextStep.y > playerTileY);
+    const left = keys[KEY_NUMPAD_4].down || keys[KEY_LEFT].down || (nextStep && nextStep.x < playerTileX);
+    const right = keys[KEY_NUMPAD_6].down || keys[KEY_RIGHT].down || (nextStep && nextStep.x > playerTileX);
+    const up = keys[KEY_NUMPAD_8].down || keys[KEY_UP].down || (nextStep && nextStep.y < playerTileY);
+    const wait = keys[KEY_NUMPAD_5].down;
+    const shoot = keys[KEY_1].downCount === 1 || shootButton;
 
     if (down) {
         tryMoveOrAttack(player, 0, player.walkSpeed, DIRECTION_DOWN);
@@ -180,7 +225,7 @@ function handlePlayerInput() {
     } else if (left) {
         tryMoveOrAttack(player, -player.walkSpeed, 0, DIRECTION_LEFT);
 
-    } else if (keys[KEY_NUMPAD_5]) {
+    } else if (wait) {
         player.ap = 0;
 
     } else if (right) {
@@ -189,13 +234,16 @@ function handlePlayerInput() {
     } else if (up) {
         tryMoveOrAttack(player, 0, -player.walkSpeed, DIRECTION_UP);
 
-    } else if (keys[KEY_Z]) {
-        effects.push({
-            x: entities[1].x,
-            y: entities[1].y,
-            frame: 0
-        });
-        player.animationCount = 36;
+    } else if (shoot) {
+        if (selectedEntity) {
+            effects.push({
+                x: selectedEntity.x,
+                y: selectedEntity.y,
+                frame: 0
+            });
+            player.animationCount = 36;
+            takeDamage(player, selectedEntity, 5);
+        }
     }
 }
 
@@ -240,6 +288,20 @@ function isVisible(entity) {
         entity.y < viewport.y + SCREEN_HEIGHT;
 }
 
+function getEntityAt(x, y) {
+    for (let i = 0; i < entities.length; i++) {
+        const other = entities[i];
+        if (other.hp <= 0) {
+            // Dead, ignore
+            continue;
+        }
+        if (((other.x / TILE_SIZE) | 0) === x && ((other.y / TILE_SIZE) | 0) === y) {
+            return other;
+        }
+    }
+    return null;
+}
+
 function tryMoveOrAttack(entity, dx, dy, direction) {
     // Always change direction
     // This is purely cosmetic
@@ -252,27 +314,21 @@ function tryMoveOrAttack(entity, dx, dy, direction) {
         return false;
     }
 
-    for (let i = 0; i < entities.length; i++) {
-        const other = entities[i];
-        if (other.hp <= 0) {
-            // Dead, ignore
-            continue;
-        }
-        if (Math.floor(other.x / 16) === tx && Math.floor(other.y / 16) === ty) {
-            if (entity.entityType === other.entityType) {
-                // Same team
-                return false;
-            } else {
-                // Different teams, attacking
-                takeDamage(entity, other, 2);
-                entity.animationCount = ATTACK_COUNT;
-                effects.push({
-                    x: other.x,
-                    y: other.y,
-                    frame: 0
-                });
-                return true;
-            }
+    const other = getEntityAt(tx, ty);
+    if (other) {
+        if (entity.entityType === other.entityType) {
+            // Same team
+            return false;
+        } else {
+            // Different teams, attacking
+            takeDamage(entity, other, 2);
+            entity.animationCount = ATTACK_COUNT;
+            effects.push({
+                x: other.x,
+                y: other.y,
+                frame: 0
+            });
+            return true;
         }
     }
 
@@ -287,6 +343,10 @@ function takeDamage(attacker, entity, damage) {
     if (entity.hp <= 0) {
         entity.hp = 0;
         addMessage(entity.name + ' died', 0xFF0000FF);
+
+        if (entity === selectedEntity) {
+            selectedEntity = null;
+        }
 
         if (attacker.entityType === ENTITY_TYPE_PLAYER) {
             for (let i = questLog.length - 1; i >= 0; i--) {
@@ -382,6 +442,7 @@ function tryDialogOption(index) {
 }
 
 function update() {
+    updateKeys();
     updateMouse();
 
     if (dialogState.visible) {
@@ -422,7 +483,7 @@ function update() {
         }
     }
 
-    if (keys[KEY_A]) {
+    if (keys[KEY_A].down) {
         screenShakeCountdown = 10;
     }
 
@@ -477,9 +538,6 @@ function renderNormalMode() {
     // Draw the tile map
     tileMap.draw(viewport.x, viewport.y);
 
-    // // Tell it to use our program (pair of shaders)
-    // gl.useProgram(program);
-
     for (let i = 0; i < items.length; i++) {
         const item = items[i];
         const x = item.x - viewport.x;
@@ -502,6 +560,9 @@ function renderNormalMode() {
             tx = 16 * (ENTITY_SPRITE_OFFSET_X[entity.entityType] + DIRECTION_OFFSET_X[entity.direction]);
             ty = 16 * (ENTITY_SPRITE_OFFSET_Y[entity.entityType] + (animFrame % 2));
         }
+        if (entity === selectedEntity) {
+            drawTexture(x, y, 720, 176, 16, 16);
+        }
         drawTexture(x, y, tx, ty, 16, 16);
     }
 
@@ -519,18 +580,18 @@ function renderNormalMode() {
         }
     }
 
-    if (mouse.down) {
-        drawTexture(mouse.x - 7, mouse.y - 7, 624, 144, 16, 16);
+    if (player.target) {
+        //drawTexture(mouse.x - 7, mouse.y - 7, 624, 144, 16, 16);
 
-        const mouseTileX = ((viewport.x + mouse.x) / TILE_SIZE) | 0;
-        const mouseTileY = ((viewport.y + mouse.y) / TILE_SIZE) | 0;
+        // const mouseTileX = ((viewport.x + mouse.x) / TILE_SIZE) | 0;
+        // const mouseTileY = ((viewport.y + mouse.y) / TILE_SIZE) | 0;
 
-        const highlightX = mouseTileX * TILE_SIZE - viewport.x;
-        const highlightY = mouseTileY * TILE_SIZE - viewport.y;
+        const highlightX = player.target.x * TILE_SIZE - viewport.x;
+        const highlightY = player.target.y * TILE_SIZE - viewport.y;
 
         let tx = 640;
         let ty = 176;
-        if (isSolid(mouseTileX, mouseTileY)) {
+        if (isSolid(player.target.x, player.target.y)) {
             tx = 688;
         }
 
@@ -558,9 +619,14 @@ function renderNormalMode() {
         }
     }
 
-    const messagesY = SCREEN_HEIGHT - messages.length * 8;
+    const messagesY = SCREEN_HEIGHT - TOOLBAR_HEIGHT - messages.length * 8;
     for (let i = 0; i < messages.length; i++) {
         drawString(messages[i].text, 0, messagesY + i * 8, messages[i].color);
+    }
+
+    // Draw toolbar
+    for (let i = 0; i < 8; i++) {
+        drawTexture(i * 16, SCREEN_HEIGHT - 16, 512, 112, 16, 16);
     }
 }
 
