@@ -52,10 +52,8 @@ function initMap() {
         };
 
         if (i === 0) {
-            // sector.x = Math.floor(Math.random() * 4);
-            // sector.y = Math.floor(Math.random() * 4);
-            sector.x = 3;
-            sector.y = 3;
+            sector.x = Math.floor(Math.random() * 4);
+            sector.y = Math.floor(Math.random() * 4);
         } else {
             const parent = sectorParents[Math.floor(Math.random() * sectorParents.length)];
             parent.children.push(sector);
