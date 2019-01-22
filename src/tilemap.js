@@ -1,7 +1,7 @@
 
 // Shader
 const tilemapVS =
-    'precision mediump float;' +
+    'precision highp float;' +
 
     'attribute vec2 position;' +
     'attribute vec2 texture;' +
@@ -20,7 +20,7 @@ const tilemapVS =
     '}';
 
 const tilemapFS =
-    'precision mediump float;' +
+    'precision highp float;' +
 
     'varying vec2 pixelCoord;' +
     'varying vec2 texCoord;' +
@@ -34,7 +34,6 @@ const tilemapFS =
     '   vec2 spriteOffset = floor(tile.xy * 256.0) * ' + TILE_SIZE + '.0;' +
     '   vec2 spriteCoord = mod(pixelCoord, ' + TILE_SIZE + '.0);' +
     '   gl_FragColor = texture2D(sprites, (spriteOffset + spriteCoord) / ' + TEXTURE_SIZE + '.0);' +
-    // '   gl_FragColor.a = 0.5;' +
     '   gl_FragColor.a = tile.a;' +
     '}';
 
