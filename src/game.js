@@ -66,7 +66,8 @@ function initEntities() {
         const rooms = sector.rooms;
         for (let i = 1; i < rooms.length; i++) {
             const center = rooms[i].getCenter();
-            for (let k = 0; k <= sector.level; k++) {
+            const maxEnemies = ((sector.level / 3)) | 0 + 1;
+            for (let k = 0; k < maxEnemies; k++) {
                 const freeCoords = getClosestEmptyTile(center.x, center.y);
                 if (!freeCoords) {
                     break;
@@ -79,7 +80,7 @@ function initEntities() {
                     dx: 0,
                     dy: 0,
                     direction: DIRECTION_DOWN,
-                    hp: 10,
+                    hp: 10 + 5 * sector.level,
                     ap: 1,
                     animationCount: 0,
                     walkSpeed: 4

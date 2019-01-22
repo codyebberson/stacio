@@ -195,11 +195,9 @@ function initMap() {
         for (let x = 0; x < MAP_WIDTH; x++) {
             if (map.isSolid(x, y)) {
                 if (!map.isSolid(x, y + 1)) {
-                    // Half wall
-                    map.setTile(0, x, y, chooseBetween(TILE_SILVER_WALL1, TILE_SILVER_WALL6), true);
+                    map.setTile(0, x, y, getHalfWallTile(x, y), true);
                 } else if (map.getTile(x, y) !== TILE_EMPTY && map.getTile(x, y + 1) === TILE_EMPTY) {
-                    // Half wall
-                    map.setTile(0, x, y, chooseBetween(TILE_SILVER_WALL1, TILE_SILVER_WALL6), true);
+                    map.setTile(0, x, y, getHalfWallTile(x, y), true);
                 } else if (!map.isSolid(x, y - 1) ||
                     !map.isSolid(x - 1, y) ||
                     !map.isSolid(x + 1, y) ||
@@ -207,8 +205,7 @@ function initMap() {
                     !map.isSolid(x + 1, y - 1) ||
                     !map.isSolid(x - 1, y + 1) ||
                     !map.isSolid(x + 1, y + 1)) {
-                    // Full wall
-                    map.setTile(0, x, y, chooseBetween(TILE_SILVER_WALL7, TILE_SILVER_WALL10), true);
+                    map.setTile(0, x, y, getWallTile(x, y), true);
                 }
             }
         }
@@ -222,25 +219,64 @@ function createRoom(rect) {
     const y2 = rect.y2;
     for (let y = y1; y < y2; y++) {
         for (let x = x1; x < x2; x++) {
-            map.setTile(0, x, y, chooseBetween(TILE_STEEL1, TILE_STEEL4), false);
+            map.setTile(0, x, y, getFloorTile(x, y), false);
         }
     }
 }
 
 function createHTunnel(x1, x2, y) {
     for (let x = Math.min(x1, x2); x <= Math.max(x1, x2); x++) {
-        map.setTile(0, x, y, chooseBetween(TILE_STEEL1, TILE_STEEL4), false);
+        map.setTile(0, x, y, getFloorTile(x, y), false);
     }
 }
 
 function createVTunnel(y1, y2, x) {
     for (let y = Math.min(y1, y2); y <= Math.max(y1, y2); y++) {
-        map.setTile(0, x, y, chooseBetween(TILE_STEEL1, TILE_STEEL4), false);
+        map.setTile(0, x, y, getFloorTile(x, y), false);
     }
 }
 
 function chooseBetween(min, max) {
     return Math.floor(Math.random() * (max - min) + min);
+}
+
+function getSectorAt(x, y) {
+    const sx = (x / SECTOR_WIDTH) | 0;
+    const sy = (y / SECTOR_HEIGHT) | 0;
+    if (sx < 0 || sx >= 4 || sy < 0 || sy >= 4) {
+        return null;
+    }
+    return sectorGrid[sy][sx];
+}
+
+function getFloorTile(x, y) {
+    const sector = getSectorAt(x, y);
+    const level = sector ? sector.level : 0;
+    const tileStartX = level < 5 ? 16 : 20;
+    const tileStartY = 9 + level % 3;
+    const minTile = 1 + tileStartY * 64 + tileStartX;
+    const maxTile = minTile + 4;
+    return chooseBetween(minTile, maxTile);
+}
+
+function getHalfWallTile(x, y) {
+    const sector = getSectorAt(x, y);
+    const level = sector ? sector.level : 0;
+    const tileStartX = 16;
+    const tileStartY = 1 + level % 6;
+    const minTile = 1 + tileStartY * 64 + tileStartX;
+    const maxTile = minTile + 6;
+    return chooseBetween(minTile, maxTile);
+}
+
+function getWallTile(x, y) {
+    const sector = getSectorAt(x, y);
+    const level = sector ? sector.level : 0;
+    const tileStartX = 22;
+    const tileStartY = 1 + level % 6;
+    const minTile = 1 + tileStartY * 64 + tileStartX;
+    const maxTile = minTile + 6;
+    return chooseBetween(minTile, maxTile);
 }
 
 function shuffle(a) {
