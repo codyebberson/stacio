@@ -137,18 +137,20 @@ function drawChar(c, x, y, opt_color) {
  * @param {number} w The width of the sprite.
  * @param {number} h The height of the sprite.
  */
-function drawTexture(x, y, u, v, w, h, opt_color) {
+function drawTexture(x, y, u, v, w, h, opt_color, opt_dw, opt_dh) {
     if (!spriteTexture.loaded) {
         return;
     }
 
-    let x2 = x + Math.abs(w);
-    let y2 = y + h;
-    let tx = u / spriteTexture.width;
-    let ty = v / spriteTexture.height;
-    let tx2 = (u + w) / spriteTexture.width;
-    let ty2 = (v + h) / spriteTexture.height;
-    let color = opt_color || 0;
+    const dw = opt_dw !== undefined ? opt_dw : w;
+    const dh = opt_dh !== undefined ? opt_dh : h;
+    const x2 = x + Math.abs(dw);
+    const y2 = y + dh;
+    const tx = u / spriteTexture.width;
+    const ty = v / spriteTexture.height;
+    const tx2 = (u + w) / spriteTexture.width;
+    const ty2 = (v + h) / spriteTexture.height;
+    const color = opt_color || 0;
 
     // First triangle
     positionArray[positionArrayIndex++] = x;

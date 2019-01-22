@@ -27,12 +27,17 @@ function initEntities() {
         dy: 0,
         direction: DIRECTION_DOWN,
         hp: 100,
+        maxHp: 100,
         ap: 1,
         animationCount: 0,
         walkSpeed: 2,
         target: null,
         path: null,
-        pathIndex: 0
+        pathIndex: 0,
+        ammo: 100,
+        maxAmmo: 100,
+        xp: 0,
+        maxXp: 100,
     };
 
     blaster = {
@@ -81,6 +86,7 @@ function initEntities() {
                     dy: 0,
                     direction: DIRECTION_DOWN,
                     hp: 10 + 5 * sector.level,
+                    maxHp: 10 + 5 * sector.level,
                     ap: 1,
                     animationCount: 0,
                     walkSpeed: 4
@@ -262,7 +268,7 @@ function handlePlayerInput() {
         tryMoveOrAttack(player, 0, -player.walkSpeed, DIRECTION_UP);
 
     } else if (shoot) {
-        if (selectedEntity) {
+        if (selectedEntity && player.ammo > 0) {
             effects.push({
                 x: selectedEntity.x,
                 y: selectedEntity.y,
@@ -270,6 +276,7 @@ function handlePlayerInput() {
             });
             player.animationCount = 36;
             takeDamage(player, selectedEntity, 5);
+            player.ammo--;
         }
     }
 }
@@ -403,6 +410,8 @@ function takeDamage(attacker, entity, damage) {
         }
 
         if (attacker.entityType === ENTITY_TYPE_PLAYER) {
+            attacker.xp++;
+
             for (let i = questLog.length - 1; i >= 0; i--) {
                 const quest = questLog[i];
                 if (quest.objectiveType === 'kill' && quest.entityType === entity.entityType) {
@@ -663,8 +672,34 @@ function renderNormalMode() {
         if (!isVisible(entity)) {
             continue;
         }
-        drawString(entity.name, 0, frameY);
-        drawString(entity.hp.toString(), 8, frameY + 8);
+
+        if (entity === player) {
+            const hpPercent = entity.hp / entity.maxHp;
+            drawString(entity.name, 0, frameY);
+            drawTexture(0, frameY + 7, 544, 208, 32, 12);
+            drawTexture(2, frameY + 9, 544, 224, 8, 8, null, Math.round(hpPercent * 28), 8);
+            drawString(entity.hp.toString(), 0, frameY + 10);
+
+            const ammoPercent = player.ammo / player.maxAmmo;
+            drawString('AMMO', 32, frameY);
+            drawTexture(32, frameY + 7, 544, 208, 32, 12);
+            drawTexture(34, frameY + 9, 552, 224, 8, 8, null, Math.round(ammoPercent * 28), 8);
+            drawString(entity.ammo.toString(), 32, frameY + 10);
+
+            const xpPercent = player.xp / player.maxXp;
+            drawString('XP', 64, frameY);
+            drawTexture(64, frameY + 7, 544, 208, 32, 12);
+            drawTexture(66, frameY + 9, 568, 224, 8, 8, null, Math.round(xpPercent * 28), 8);
+            drawString(entity.xp.toString(), 64, frameY + 10);
+
+        } else {
+            const hpPercent = entity.hp / entity.maxHp;
+            drawString(entity.name, 0, frameY);
+            drawTexture(0, frameY + 7, 544, 208, 32, 12);
+            drawTexture(2, frameY + 9, 560, 224, 8, 8, null, Math.round(hpPercent * 28), 8);
+            drawString(entity.hp.toString(), 0, frameY + 10);
+        }
+
         frameY += 24;
     }
 
@@ -681,8 +716,23 @@ function renderNormalMode() {
     }
 
     // Draw toolbar
-    for (let i = 0; i < 8; i++) {
-        drawTexture(i * 16, SCREEN_HEIGHT - 16, 512, 112, 16, 16);
+    for (let i = 0; i < 6; i++) {
+        // Draw button background
+        drawTexture(
+            i * TOOLBAR_BUTTON_SIZE,
+            SCREEN_HEIGHT - TOOLBAR_BUTTON_SIZE,
+            512, 208,
+            TOOLBAR_BUTTON_SIZE, TOOLBAR_BUTTON_SIZE);
+
+        if (i === 0) {
+            // Draw button
+            // TODO: generalize
+            drawTexture(
+                i * TOOLBAR_BUTTON_SIZE + 4,
+                SCREEN_HEIGHT - TOOLBAR_BUTTON_SIZE + 4,
+                256, 448,
+                16, 16);
+        }
     }
 }
 
