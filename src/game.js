@@ -66,19 +66,25 @@ function initEntities() {
         const rooms = sector.rooms;
         for (let i = 1; i < rooms.length; i++) {
             const center = rooms[i].getCenter();
-            entities.push({
-                entityType: ENTITY_TYPE_ALIEN,
-                name: 'Alien',
-                x: center.x * TILE_SIZE,
-                y: center.y * TILE_SIZE,
-                dx: 0,
-                dy: 0,
-                direction: DIRECTION_DOWN,
-                hp: 10,
-                ap: 1,
-                animationCount: 0,
-                walkSpeed: 4
-            });
+            for (let k = 0; k <= sector.level; k++) {
+                const freeCoords = getClosestEmptyTile(center.x, center.y);
+                if (!freeCoords) {
+                    break;
+                }
+                entities.push({
+                    entityType: ENTITY_TYPE_ALIEN,
+                    name: 'Alien (' + (sector.level + 1) + ')',
+                    x: freeCoords.tx * TILE_SIZE,
+                    y: freeCoords.ty * TILE_SIZE,
+                    dx: 0,
+                    dy: 0,
+                    direction: DIRECTION_DOWN,
+                    hp: 10,
+                    ap: 1,
+                    animationCount: 0,
+                    walkSpeed: 4
+                });
+            }
 
             if (i === 8) {
                 items.push({
@@ -195,15 +201,26 @@ function handlePlayerInput() {
     }
 
     if (keys[KEY_TAB].downCount === 1) {
-        if (selectedEntity) {
-            const selectedIndex = entities.indexOf(selectedEntity);
-            let nextIndex = selectedIndex + 1;
-            if (nextIndex === entities.length - 1 || !isVisible(entities[nextIndex])) {
-                nextIndex = 1;
+        const startIndex = selectedEntity ? entities.indexOf(selectedEntity) : 0;
+        let nextIndex = startIndex + 1;
+        while (nextIndex === 0 ||
+            nextIndex >= entities.length ||
+            entities[nextIndex].hp <= 0 ||
+            !isVisible(entities[nextIndex])) {
+
+            nextIndex++;
+            if (nextIndex >= entities.length) {
+                nextIndex = 0;
             }
+            if (nextIndex === startIndex) {
+                nextIndex = -1;
+                break;
+            }
+        }
+        if (nextIndex > 0) {
             selectedEntity = entities[nextIndex];
         } else {
-            selectedEntity = entities[1];
+            selectedEntity = null;
         }
         return;
     }
@@ -307,6 +324,32 @@ function getEntityAt(x, y) {
         }
         if (((other.x / TILE_SIZE) | 0) === x && ((other.y / TILE_SIZE) | 0) === y) {
             return other;
+        }
+    }
+    return null;
+}
+
+function getClosestEmptyTile(tx0, ty0) {
+    for (let r = 0; r < 20; r++) {
+        for (let tx = tx0 - r; tx <= tx0 + r; tx++) {
+            const ty1 = ty0 - r;
+            if (!map.isSolid(tx, ty1) && getEntityAt(tx, ty1) === null) {
+                return { tx: tx, ty: ty1 };
+            }
+            const ty2 = ty0 + r;
+            if (!map.isSolid(tx, ty2) && getEntityAt(tx, ty2) === null) {
+                return { tx: tx, ty: ty2 };
+            }
+        }
+        for (let ty = ty0 - r; ty <= ty0 + r; ty++) {
+            const tx1 = tx0 - r;
+            if (!map.isSolid(tx1, ty) && getEntityAt(tx1, ty) === null) {
+                return { tx: tx1, ty: ty };
+            }
+            const tx2 = tx0 + r;
+            if (!map.isSolid(tx2, ty) && getEntityAt(tx2, ty) === null) {
+                return { tx: tx2, ty: ty };
+            }
         }
     }
     return null;
@@ -424,6 +467,7 @@ function nextTurn() {
     }
     currEntityIndex++;
     if (currEntityIndex >= entities.length) {
+        // Reached the end of the entities list.  Start at beginning.
         currEntityIndex = 0;
         for (let i = 0; i < entities.length; i++) {
             if (entities[i].hp > 0) {
