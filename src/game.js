@@ -26,8 +26,8 @@ function initEntities() {
         dx: 0,
         dy: 0,
         direction: DIRECTION_DOWN,
-        hp: 100,
-        maxHp: 100,
+        hp: 1000,
+        maxHp: 1000,
         ap: 1,
         animationCount: 0,
         walkSpeed: 2,
@@ -275,7 +275,7 @@ function handlePlayerInput() {
                 frame: 0
             });
             player.animationCount = 36;
-            takeDamage(player, selectedEntity, 5);
+            takeDamage(player, selectedEntity, 500);
             player.ammo--;
         }
     }
@@ -704,10 +704,11 @@ function renderNormalMode() {
     }
 
     if (questLog.length > 0) {
-        drawString('OBJECTIVES:', SCREEN_WIDTH - 60, 0);
-        for (let i = 0; i < questLog.length; i++) {
-            drawString(questLog[i].title, SCREEN_WIDTH - 60, 8 + 8 * i);
-        }
+        drawString('X=' + player.x + ', Y=' + player.y, SCREEN_WIDTH - 60, 0);
+        // drawString('OBJECTIVES:', SCREEN_WIDTH - 60, 0);
+        // for (let i = 0; i < questLog.length; i++) {
+        //     drawString(questLog[i].title, SCREEN_WIDTH - 60, 8 + 8 * i);
+        // }
     }
 
     const messagesY = SCREEN_HEIGHT - TOOLBAR_HEIGHT - messages.length * 8;
