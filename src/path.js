@@ -14,7 +14,7 @@ const costs = [1, 1, 1, 1];
 function computePath(source, dest, maxDist) {
     clearDijkstra(map, dest);
 
-    const sourceCell = map.layers[0][source.y][source.x];
+    const sourceCell = map.grid[source.y][source.x];
     sourceCell.g = 0.0;
 
     const q = [sourceCell];
@@ -30,9 +30,9 @@ function computePath(source, dest, maxDist) {
             const x = u.x + dxs[i];
             const y = u.y + dys[i];
             if (x >= 0 && x < map.width && y >= 0 && y < map.height) {
-                const v = map.layers[0][y][x];
+                const v = map.grid[y][x];
                 const alt = u.g + costs[i];
-                if (alt < v.g && alt <= maxDist && !map.layers[0][y][x].blocked) {
+                if (alt < v.g && alt <= maxDist && !map.grid[y][x].blocked) {
                     v.g = alt;
                     v.prev = u;
                     q.push(v);
@@ -46,7 +46,7 @@ function computePath(source, dest, maxDist) {
 function clearDijkstra(map, dest) {
     for (let y = 0; y < map.height; y++) {
         for (let x = 0; x < map.width; x++) {
-            const cell = map.layers[0][y][x];
+            const cell = map.grid[y][x];
             cell.g = Infinity;
             cell.h = Math.min(Math.abs(x - dest.x), Math.abs(y - dest.y));
             cell.prev = null;

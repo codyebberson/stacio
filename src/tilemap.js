@@ -34,55 +34,90 @@ const tilemapFS =
     '   vec2 spriteOffset = floor(tile.xy * 256.0) * ' + TILE_SIZE + '.0;' +
     '   vec2 spriteCoord = mod(pixelCoord, ' + TILE_SIZE + '.0);' +
     '   gl_FragColor = texture2D(sprites, (spriteOffset + spriteCoord) / ' + TEXTURE_SIZE + '.0);' +
+    // '   gl_FragColor.a = 0.5;' +
+    '   gl_FragColor.a = tile.a;' +
     '}';
 
-function TileMapLayer(gl, map, imageWidth, imageHeight, repeat) {
-    this.scrollScaleX = 1;
-    this.scrollScaleY = 1;
 
-    const imageData = new Uint8Array(4 * imageWidth * imageHeight);
-    let i = 0;
-    for (let y = 0; y < imageHeight; y++) {
-        for (let x = 0; x < imageWidth; x++) {
-            let t = map[y][x].tile;
-            if (t === 0) {
-                imageData[i++] = 255;
-                imageData[i++] = 255;
-            } else {
-                imageData[i++] = Math.floor((t - 1) % 64);
-                imageData[i++] = Math.floor((t - 1) / 64);
-            }
+function TileMapCell(x, y, tile) {
+    this.x = x;
+    this.y = y;
+    this.tile = tile;
+    this.blocked = true;
+    this.visible = false;
+    this.seen = false;
+    this.g = 0;
+    this.h = 0;
+    this.prev = null;
+}
 
-            imageData[i++] = 255; // Green is ignored
-            imageData[i++] = 255; // Alpha is max for opaque
-        }
+function TileMapCell(x, y, tile) {
+    this.x = x;
+    this.y = y;
+    this.tile = tile;
+    this.blocked = true;
+    this.visible = false;
+    this.g = 0;
+    this.h = 0;
+    this.prev = null;
+}
+
+function TileMapLayer(width, height) {
+    this.width = width;
+    this.height = height;
+    this.texture = null;
+    this.imageData = new Uint8Array(4 * width * height);
+    this.dimensions = new Float32Array([width, height]);
+    this.clear();
+}
+
+TileMapLayer.prototype.clear = function() {
+    for (let i = 0; i < this.imageData.length; i++) {
+        this.imageData[i] = 255;
     }
+};
 
-    this.tileTexture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, this.tileTexture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, imageWidth, imageHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, imageData);
+TileMapLayer.prototype.setAlpha = function(x, y, alpha) {
+    this.imageData[4 * (y * this.width + x) + 3] = alpha;
+};
+
+TileMapLayer.prototype.initGl = function(gl) {
+    this.texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.width, this.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, this.imageData);
 
     // MUST be filtered with NEAREST or tile lookup fails
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-
-    if (repeat) {
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-    } else {
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    }
-
-    this.mapSize = new Float32Array(2);
-    this.mapSize[0] = imageWidth;
-    this.mapSize[1] = imageHeight;
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 };
 
-var TileMap = function (gl) {
-    this.gl = gl;
+TileMapLayer.prototype.updateGl = function(gl) {
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE, this.imageData);
+};
+
+function TileMap(width, height, layerCount) {
+    this.width = width;
+    this.height = height;
+    this.grid = new Array(height);
+    this.layers = new Array(layerCount);
     this.viewportSize = new Float32Array(2);
-    this.layers = [];
+
+    for (let y = 0; y < height; y++) {
+        this.grid[y] = new Array(width);
+        for (let x = 0; x < width; x++) {
+            this.grid[y][x] = new TileMapCell(x, y, 0);
+        }
+    }
+
+    for (let i = 0; i < layerCount; i++) {
+        this.layers[i] = new TileMapLayer(width, height);
+    }
+}
+
+TileMap.prototype.initGl = function(gl) {
+    this.gl = gl;
 
     var quadVerts = [
         //x  y  u  v
@@ -107,14 +142,52 @@ var TileMap = function (gl) {
     this.mapSizeUniform = gl.getUniformLocation(this.tilemapShader, "mapSize");
     this.tileSamplerUniform = gl.getUniformLocation(this.tilemapShader, "tiles");
     this.spriteSamplerUniform = gl.getUniformLocation(this.tilemapShader, "sprites");
+
+    for (let i = 0; i < this.layers.length; i++) {
+        this.layers[i].initGl(gl);
+    }
 };
 
-TileMap.prototype.resizeViewport = function (width, height) {
-    this.viewportSize[0] = width;
-    this.viewportSize[1] = height;
+TileMap.prototype.setTile = function(layerIndex, x, y, tile, blocked) {
+    this.grid[y][x].tile = tile;
+    this.grid[y][x].blocked = blocked;
+
+    const layer = this.layers[layerIndex];
+    const ti = 4 * (y * layer.width + x);
+    const tx = tile === 0 ? 255 : ((tile - 1) % 64) | 0;
+    const ty = tile === 0 ? 255 : ((tile - 1) / 64) | 0;
+    layer.imageData[ti + 0] = tx;
+    layer.imageData[ti + 1] = ty;
 };
 
-TileMap.prototype.draw = function (x, y) {
+TileMap.prototype.getCell = function(tx, ty) {
+    if (tx < 0 || tx >= MAP_WIDTH || ty < 0 || ty >= MAP_HEIGHT) {
+        return null;
+    }
+    return this.grid[ty][tx];
+};
+
+TileMap.prototype.getTile = function(tx, ty) {
+    const cell = this.getCell(tx, ty);
+    return cell ? cell.tile : TILE_SILVER_WALL1;
+};
+
+TileMap.prototype.isSolid = function(tx, ty) {
+    const cell = this.getCell(tx, ty);
+    return !cell || cell.blocked;
+};
+
+TileMap.prototype.isVisible = function(tx, ty) {
+    const cell = this.getCell(tx, ty);
+    return cell && cell.visible;
+};
+
+TileMap.prototype.isSeen = function(tx, ty) {
+    const cell = this.getCell(tx, ty);
+    return cell && cell.seen;
+};
+
+TileMap.prototype.draw = function (x, y, width, height) {
     if (!spriteTexture.loaded) {
         return;
     }
@@ -133,6 +206,8 @@ TileMap.prototype.draw = function (x, y) {
     gl.vertexAttribPointer(this.positionAttribute, 2, gl.FLOAT, false, 16, 0);
     gl.vertexAttribPointer(this.textureAttribute, 2, gl.FLOAT, false, 16, 8);
 
+    this.viewportSize[0] = width;
+    this.viewportSize[1] = height;
     gl.uniform2fv(this.viewportSizeUniform, this.viewportSize);
 
     gl.activeTexture(gl.TEXTURE0);
@@ -141,12 +216,26 @@ TileMap.prototype.draw = function (x, y) {
     gl.activeTexture(gl.TEXTURE1);
     gl.uniform1i(this.tileSamplerUniform, 1);
 
+    const tx1 = (x / TILE_SIZE) | 0;
+    const ty1 = (y / TILE_SIZE) | 0;
+    const tx2 = ((x + width) / TILE_SIZE) | 0;
+    const ty2 = ((y + height) / TILE_SIZE) | 0;
+
     // Draw each layer of the map
     for (let i = 0; i < this.layers.length; i++) {
         const layer = this.layers[i];
-        gl.uniform2f(this.viewOffsetUniform, Math.floor(x * layer.scrollScaleX), Math.floor(y * layer.scrollScaleY));
-        gl.uniform2fv(this.mapSizeUniform, layer.mapSize);
-        gl.bindTexture(gl.TEXTURE_2D, layer.tileTexture);
+
+        for (let ty = ty1; ty <= ty2; ty++) {
+            for (let tx = tx1; tx <= tx2; tx++) {
+                const alpha = this.isVisible(tx, ty) ? 255 : this.isSeen(tx, ty) ? 144 : 0;
+                layer.setAlpha(tx, ty, alpha);
+            }
+        }
+
+        gl.uniform2f(this.viewOffsetUniform, x, y);
+        gl.uniform2fv(this.mapSizeUniform, layer.dimensions);
+        gl.bindTexture(gl.TEXTURE_2D, layer.texture);
+        layer.updateGl(gl);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
 };

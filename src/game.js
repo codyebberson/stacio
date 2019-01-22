@@ -8,84 +8,95 @@ let animDelay = 0;
 let currEntityIndex = 0;
 let t = 0;
 
-const player = {
-    entityType: ENTITY_TYPE_PLAYER,
-    name: 'Player',
-    x: sectors[0].rooms[0].getCenter().x * TILE_SIZE,
-    y: sectors[0].rooms[0].getCenter().y * TILE_SIZE,
-    dx: 0,
-    dy: 0,
-    direction: DIRECTION_DOWN,
-    hp: 100,
-    ap: 1,
-    animationCount: 0,
-    walkSpeed: 2,
-    target: null,
-    path: null,
-    pathIndex: 0
-};
-
-const blaster = {
-    entityType: ENTITY_TYPE_BLASTER,
-    name: 'Blaster',
-    x: player.x + 32,
-    y: player.y + 32
-}
-
-const entities = [
-    player
-];
-
-const items = [
-    blaster
-];
-
-const inventory = [];
-
-const messages = [];
-
-const viewport = {
-    x: 0,
-    y: 0
-};
-
+let player = null;
+let blaster = null;
+let entities = null;
+let items = null;
+let inventory = null;
+let messages = null;
+let viewport = null;
 let selectedEntity = null;
 
-for (let j = 0; j < sectors.length; j++) {
-    const sector = sectors[j];
-    const rooms = sector.rooms;
-    for (let i = 1; i < rooms.length; i++) {
-        const center = rooms[i].getCenter();
-        entities.push({
-            entityType: ENTITY_TYPE_ALIEN,
-            name: 'Alien',
-            x: center.x * TILE_SIZE,
-            y: center.y * TILE_SIZE,
-            dx: 0,
-            dy: 0,
-            direction: DIRECTION_DOWN,
-            hp: 10,
-            ap: 1,
-            animationCount: 0,
-            walkSpeed: 4
-        });
+function initEntities() {
+    player = {
+        entityType: ENTITY_TYPE_PLAYER,
+        name: 'Player',
+        x: sectors[0].rooms[0].getCenter().x * TILE_SIZE,
+        y: sectors[0].rooms[0].getCenter().y * TILE_SIZE,
+        dx: 0,
+        dy: 0,
+        direction: DIRECTION_DOWN,
+        hp: 100,
+        ap: 1,
+        animationCount: 0,
+        walkSpeed: 2,
+        target: null,
+        path: null,
+        pathIndex: 0
+    };
 
-        if (i === 8) {
-            items.push({
-                entityType: ENTITY_TYPE_BLUE_KEYCARD,
-                name: 'Blue Key',
-                x: center.x * TILE_SIZE + 32,
-                y: center.y * TILE_SIZE + 32
+    blaster = {
+        entityType: ENTITY_TYPE_BLASTER,
+        name: 'Blaster',
+        x: player.x + 32,
+        y: player.y + 32
+    }
+
+    entities = [
+        player
+    ];
+
+    items = [
+        blaster
+    ];
+
+    inventory = [];
+
+    messages = [];
+
+    viewport = {
+        x: 0,
+        y: 0
+    };
+
+    selectedEntity = null;
+
+    for (let j = 0; j < sectors.length; j++) {
+        const sector = sectors[j];
+        const rooms = sector.rooms;
+        for (let i = 1; i < rooms.length; i++) {
+            const center = rooms[i].getCenter();
+            entities.push({
+                entityType: ENTITY_TYPE_ALIEN,
+                name: 'Alien',
+                x: center.x * TILE_SIZE,
+                y: center.y * TILE_SIZE,
+                dx: 0,
+                dy: 0,
+                direction: DIRECTION_DOWN,
+                hp: 10,
+                ap: 1,
+                animationCount: 0,
+                walkSpeed: 4
             });
+
+            if (i === 8) {
+                items.push({
+                    entityType: ENTITY_TYPE_BLUE_KEYCARD,
+                    name: 'Blue Key',
+                    x: center.x * TILE_SIZE + 32,
+                    y: center.y * TILE_SIZE + 32
+                });
+            }
         }
     }
+
+    map.computeFov((player.x / TILE_SIZE) | 0, (player.y / TILE_SIZE) | 0, 12);
 }
 
 const effects = [];
 
 let screenShakeCountdown = 0;
-
-let tileMap = null;
 
 function main() {
     let canvases = document.querySelectorAll('canvas');
@@ -103,12 +114,10 @@ function main() {
 
     spriteTexture = createTexture('img/graphics.png');
 
-    tileMap = new TileMap(gl);
-    tileMap.spriteSheet = spriteTexture;
+    initMap();
+    initEntities();
 
-    for (let i = 0; i < MAP_LAYERS; i++) {
-        tileMap.layers.push(new TileMapLayer(gl, map.layers[i], MAP_WIDTH, MAP_HEIGHT));
-    }
+    map.initGl(gl);
 
     window.addEventListener('resize', handleResizeEvent, false);
     handleResizeEvent();
@@ -174,7 +183,7 @@ function handlePlayerInput() {
                 return;
             }
 
-            const target = getCell(mouseTileX, mouseTileY);
+            const target = map.getCell(mouseTileX, mouseTileY);
             if (target !== player.target) {
                 const source = { x: playerTileX, y: playerTileY };
                 player.target = target;
@@ -185,7 +194,7 @@ function handlePlayerInput() {
         }
     }
 
-    if (keys[KEY_TAB].upCount === 1) {
+    if (keys[KEY_TAB].downCount === 1) {
         if (selectedEntity) {
             const selectedIndex = entities.indexOf(selectedEntity);
             let nextIndex = selectedIndex + 1;
@@ -285,7 +294,8 @@ function isVisible(entity) {
     return entity.x + SPRITE_WIDTH >= viewport.x &&
         entity.y + SPRITE_HEIGHT >= viewport.y &&
         entity.x < viewport.x + SCREEN_WIDTH &&
-        entity.y < viewport.y + SCREEN_HEIGHT;
+        entity.y < viewport.y + SCREEN_HEIGHT &&
+        map.isVisible((entity.x / TILE_SIZE) | 0, (entity.y / TILE_SIZE) | 0);
 }
 
 function getEntityAt(x, y) {
@@ -310,7 +320,7 @@ function tryMoveOrAttack(entity, dx, dy, direction) {
     const mag = Math.hypot(dx, dy);
     const tx = Math.floor(entity.x / 16) + dx / mag;
     const ty = Math.floor(entity.y / 16) + dy / mag;
-    if (isSolid(tx, ty)) {
+    if (map.isSolid(tx, ty)) {
         return false;
     }
 
@@ -374,6 +384,9 @@ function endMove(entity) {
                 pickUpItem(item);
             }
         }
+
+        // Update FOV
+        map.computeFov((player.x / TILE_SIZE) | 0, (player.y / TILE_SIZE) | 0, 12);
     }
 }
 
@@ -499,7 +512,6 @@ function update() {
 
 function render() {
     gl.viewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    tileMap.resizeViewport(SCREEN_WIDTH, SCREEN_HEIGHT);
 
     // Clear the canvas
     gl.clearColor(0, 0, 0, 1);
@@ -523,8 +535,6 @@ function render() {
     colorArrayIndex = 0;
 
     if (dialogState.visible) {
-        // // Tell it to use our program (pair of shaders)
-        // gl.useProgram(program);
         renderDialog();
     } else {
         renderNormalMode();
@@ -536,10 +546,26 @@ function render() {
 
 function renderNormalMode() {
     // Draw the tile map
-    tileMap.draw(viewport.x, viewport.y);
+    map.draw(viewport.x, viewport.y, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    if (player.target) {
+        const highlightX = player.target.x * TILE_SIZE - viewport.x;
+        const highlightY = player.target.y * TILE_SIZE - viewport.y;
+
+        let tx = 640;
+        let ty = 176;
+        if (map.isSolid(player.target.x, player.target.y)) {
+            tx = 688;
+        }
+
+        drawTexture(highlightX, highlightY, tx, ty, 16, 16);
+    }
 
     for (let i = 0; i < items.length; i++) {
         const item = items[i];
+        if (!isVisible(item)) {
+            continue;
+        }
         const x = item.x - viewport.x;
         const y = item.y - viewport.y;
         const tx = 16 * (ENTITY_SPRITE_OFFSET_X[item.entityType]);
@@ -549,6 +575,9 @@ function renderNormalMode() {
 
     for (let i = 0; i < entities.length; i++) {
         const entity = entities[i];
+        if (!isVisible(entity)) {
+            continue;
+        }
         const x = entity.x - viewport.x;
         const y = entity.y - viewport.y;
         let tx = 0;
@@ -578,24 +607,6 @@ function renderNormalMode() {
         if (effect.frame >= 18) {
             effects.splice(i, 1);
         }
-    }
-
-    if (player.target) {
-        //drawTexture(mouse.x - 7, mouse.y - 7, 624, 144, 16, 16);
-
-        // const mouseTileX = ((viewport.x + mouse.x) / TILE_SIZE) | 0;
-        // const mouseTileY = ((viewport.y + mouse.y) / TILE_SIZE) | 0;
-
-        const highlightX = player.target.x * TILE_SIZE - viewport.x;
-        const highlightY = player.target.y * TILE_SIZE - viewport.y;
-
-        let tx = 640;
-        let ty = 176;
-        if (isSolid(player.target.x, player.target.y)) {
-            tx = 688;
-        }
-
-        drawTexture(highlightX, highlightY, tx, ty, 16, 16);
     }
 
     let frameY = 0;
