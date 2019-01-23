@@ -18,6 +18,7 @@ const KEY_DOWN = 40;
 const KEY_1 = 49;
 const KEY_2 = 50;
 const KEY_A = 65;
+const KEY_N = 78;
 const KEY_X = 88;
 const KEY_Z = 90;
 const KEY_NUMPAD_0 = 96;

@@ -16,6 +16,7 @@ let inventory = null;
 let messages = null;
 let viewport = null;
 let selectedEntity = null;
+let talentsOpen = false;
 
 function initEntities() {
     player = {
@@ -234,6 +235,11 @@ function handlePlayerInput() {
         return;
     }
 
+    if (keys[KEY_N].downCount === 1) {
+        talentsOpen = true;
+        return;
+    }
+
     let nextStep = null;
     if (player.path) {
         nextStep = player.path[player.pathIndex];
@@ -414,7 +420,7 @@ function takeDamage(attacker, entity, damage) {
         if (attacker.entityType === ENTITY_TYPE_PLAYER) {
             const xpGain = entity.level * 10;
             player.xp += xpGain;
-            if (player.xp >= player.maxXp) {
+            while (player.xp >= player.maxXp) {
                 player.xp -= player.maxXp;
                 player.maxXp *= 2;
                 player.level++;
@@ -523,6 +529,11 @@ function update() {
 
     if (dialogState.visible) {
         handleDialogInput();
+    } else if (talentsOpen) {
+        if (keys[KEY_N].downCount === 1) {
+            talentsOpen = false;
+        }
+
     } else if (player.hp > 0) {
         while (true) {
             const currEntity = entities[currEntityIndex];
@@ -601,6 +612,75 @@ function render() {
         renderDialog();
     } else {
         renderNormalMode();
+
+        if (talentsOpen) {
+            // Draw translucent layer to darken the game
+            drawTexture(0, 0, 512, 256, 144, 144, 0x00000080, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+            // Draw dialog background
+            const x = ((SCREEN_WIDTH - 144) / 2) | 0;
+            const y = ((SCREEN_HEIGHT - 144) / 2) | 0;
+            drawTexture(x, y, 512, 256, 144, 144);
+
+            // Strength
+
+            // Leap
+            drawTexture(x + 6 + 4, y + 5 + 4, 480, 416, 16, 16);
+            drawString('2', x + 6 + 4 + 11, y + 5 + 4 + 10, 0x00FF00FF);
+
+            // Charge
+            drawTexture(x + 6 + 12 + 4, y + 5 + 24 + 4, 464, 416, 16, 16);
+            drawString('0', x + 6 + 16 + 11, y + 5 + 24 + 14, 0x00FF00FF);
+
+            // Shooter
+            drawTexture(x + 6 + 12 + 4, y + 5 + 48 + 4, 624, 160, 16, 16);
+            drawString('0', x + 6 + 16 + 11, y + 5 + 48 + 14, 0x00FF00FF);
+
+            // Brawler
+            drawTexture(x + 6 + 12 + 4, y + 5 + 72 + 4, 448, 416, 16, 16);
+            drawString('0', x + 6 + 16 + 11, y + 5 + 72 + 14, 0x00FF00FF);
+
+            // Tech
+
+            // Armorsmith
+            drawTexture(x + 52 + 4, y + 5 + 4, 336, 416, 16, 16);
+            drawString('0', x + 52 + 4 + 11, y + 5 + 4 + 10, 0x00FF00FF);
+
+            // Weaponsmith
+            drawTexture(x + 52 + 12 + 4, y + 5 + 24 + 4, 336, 448, 16, 16);
+            drawString('0', x + 52 + 16 + 11, y + 5 + 24 + 14, 0x00FF00FF);
+
+            // Power Saver
+            drawTexture(x + 52 + 12 + 4, y + 5 + 48 + 4, 272, 400, 16, 16);
+            drawString('0', x + 52 + 16 + 11, y + 5 + 48 + 14, 0x00FF00FF);
+
+            // Hacker
+            drawTexture(x + 52 + 12 + 4, y + 5 + 72 + 4, 400, 432, 16, 16);
+            drawString('0', x + 52 + 16 + 11, y + 5 + 72 + 14, 0x00FF00FF);
+
+            // Psych
+
+            // Sleeper
+            drawTexture(x + 98 + 4, y + 5 + 4, 128, 354, 16, 16);
+            drawString('0', x + 98 + 4 + 11, y + 5 + 4 + 10, 0x00FF00FF);
+
+            // Push
+            drawTexture(x + 98 + 12 + 4, y + 5 + 24 + 4, 592, 160, 16, 16);
+            drawString('0', x + 98 + 16 + 11, y + 5 + 24 + 14, 0x00FF00FF);
+
+            // Stealth
+            drawTexture(x + 98 + 12 + 4, y + 5 + 48 + 4, 272, 400, 16, 16);
+            drawString('0', x + 98 + 16 + 11, y + 5 + 48 + 14, 0x00FF00FF);
+
+            // Blocker
+            drawTexture(x + 98 + 12 + 4, y + 5 + 72 + 4, 352, 400, 16, 16);
+            drawString('0', x + 98 + 16 + 11, y + 5 + 72 + 14, 0x00FF00FF);
+
+            drawString('1: Leap 2 squares', x + 8, y + 106, 0xFFFFFFFF);
+            drawString('2: Leap 3 squares', x + 8, y + 114, 0xFFFFFFFF);
+            drawString('3: Leap 4 squares', x + 8, y + 122, 0x00FF00FF);
+            drawString('4: Leap 5 squares', x + 8, y + 130, 0x808080FF);
+        }
     }
 
     drawSprites();
