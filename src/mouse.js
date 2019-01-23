@@ -2,6 +2,8 @@
 const mouse = new Input();
 mouse.x = 0;
 mouse.y = 0;
+mouse.dx = 0;
+mouse.dy = 0;
 
 function initMouse(el) {
     el.addEventListener('mousedown', handleMouseEvent);
@@ -70,8 +72,12 @@ function updatePosition(clientX, clientY) {
         rect = new Rect(0, Math.floor(excess / 2), rect.width, actualHeight);
     }
 
+    const oldX = mouse.x;
+    const oldY = mouse.y;
     mouse.x = (SCREEN_WIDTH * (clientX - rect.left) / rect.width) | 0;
     mouse.y = (SCREEN_HEIGHT * (clientY - rect.top) / rect.height) | 0;
+    mouse.dx = mouse.x - oldX;
+    mouse.dy = mouse.y - oldY;
 }
 
 function isMouseInRect(x, y, w, h) {

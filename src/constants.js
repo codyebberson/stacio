@@ -10,6 +10,8 @@ const TILE_SIZE = 16;
 const TEXTURE_SIZE = 1024;
 
 const KEY_TAB = 9;
+const KEY_ENTER = 13;
+const KEY_ESCAPE = 27;
 const KEY_SPACE = 32;
 const KEY_LEFT = 37;
 const KEY_UP = 38;

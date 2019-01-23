@@ -16,6 +16,8 @@ let messages = null;
 let viewport = null;
 let selectedEntity = null;
 let talentsOpen = false;
+let cursorMode = false;
+let cursor = { x: 0, y: 0, tx: 0, ty: 0 };
 
 function initEntities() {
     player = {
@@ -189,6 +191,50 @@ function handlePlayerInput() {
     const playerTileY = (player.y / TILE_SIZE) | 0;
     let shootButton = false;
 
+    if (mouse.dx !== 0 || mouse.dy !== 0) {
+        cursor.x = mouse.x;
+        cursor.y = mouse.y;
+        cursor.tx = ((viewport.x + cursor.x) / TILE_SIZE) | 0;
+        cursor.ty = ((viewport.y + cursor.y) / TILE_SIZE) | 0;
+    }
+
+    if (cursorMode) {
+        if (keys[KEY_NUMPAD_2].downCount === 1 || keys[KEY_DOWN].downCount === 1) {
+            cursor.y += 16;
+            cursor.ty++;
+
+        } else if (keys[KEY_NUMPAD_4].downCount === 1 || keys[KEY_LEFT].downCount === 1) {
+            cursor.x -= 16;
+            cursor.tx--;
+
+        } else if (keys[KEY_NUMPAD_6].downCount === 1 || keys[KEY_RIGHT].downCount === 1) {
+            cursor.x += 16;
+            cursor.tx++;
+
+        } else if (keys[KEY_NUMPAD_8].downCount === 1 || keys[KEY_UP].downCount === 1) {
+            cursor.y -= 16;
+            cursor.ty--;
+
+        } else if (keys[KEY_ESCAPE].downCount === 1) {
+            player.target = null;
+            player.path = null;
+            cursorMode = false;
+
+        } else if (keys[KEY_ENTER].downCount === 1) {
+            cursorMode = false;
+        }
+
+        const target = map.getCell(cursor.tx, cursor.ty);
+        if (target !== player.target) {
+            const source = { x: playerTileX, y: playerTileY };
+            player.target = target;
+            player.path = computePath(source, player.target, 20);
+            player.pathIndex = 0;
+        }
+
+        return;
+    }
+
     if (mouse.down) {
         if (mouse.y > SCREEN_HEIGHT - TOOLBAR_HEIGHT) {
             // Toolbar
@@ -198,8 +244,8 @@ function handlePlayerInput() {
 
         } else {
             // Get path to current location
-            const mouseTileX = ((viewport.x + mouse.x) / TILE_SIZE) | 0;
-            const mouseTileY = ((viewport.y + mouse.y) / TILE_SIZE) | 0;
+            const mouseTileX = cursor.tx;
+            const mouseTileY = cursor.ty;
 
             selectedEntity = getEntityAt(mouseTileX, mouseTileY);
             if (selectedEntity) {
@@ -241,6 +287,15 @@ function handlePlayerInput() {
         } else {
             selectedEntity = null;
         }
+        return;
+    }
+
+    if (keys[KEY_ENTER].downCount === 1) {
+        cursor.x = player.x - viewport.x;
+        cursor.y = player.y - viewport.y;
+        cursor.tx = (player.x / TILE_SIZE) | 0;
+        cursor.ty = (player.y / TILE_SIZE) | 0;
+        cursorMode = true;
         return;
     }
 
