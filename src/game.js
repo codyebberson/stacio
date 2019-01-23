@@ -37,7 +37,8 @@ function initEntities() {
         ammo: 100,
         maxAmmo: 100,
         xp: 0,
-        maxXp: 100,
+        maxXp: 10,
+        level: 1,
     };
 
     blaster = {
@@ -79,6 +80,7 @@ function initEntities() {
                 }
                 entities.push({
                     entityType: ENTITY_TYPE_ALIEN,
+                    level: sector.level + 1,
                     name: 'Alien (' + (sector.level + 1) + ')',
                     x: freeCoords.tx * TILE_SIZE,
                     y: freeCoords.ty * TILE_SIZE,
@@ -410,7 +412,14 @@ function takeDamage(attacker, entity, damage) {
         }
 
         if (attacker.entityType === ENTITY_TYPE_PLAYER) {
-            attacker.xp++;
+            const xpGain = entity.level * 10;
+            player.xp += xpGain;
+            if (player.xp >= player.maxXp) {
+                player.xp -= player.maxXp;
+                player.maxXp *= 2;
+                player.level++;
+                addMessage('You are now level ' + player.level, 0x00FF00FF);
+            }
 
             for (let i = questLog.length - 1; i >= 0; i--) {
                 const quest = questLog[i];
@@ -678,26 +687,26 @@ function renderNormalMode() {
             drawString(entity.name, 0, frameY);
             drawTexture(0, frameY + 7, 544, 208, 32, 12);
             drawTexture(2, frameY + 9, 544, 224, 8, 8, null, Math.round(hpPercent * 28), 8);
-            drawString(entity.hp.toString(), 0, frameY + 10);
+            drawString(entity.hp + '/' + entity.maxHp, 0, frameY + 10);
 
             const ammoPercent = player.ammo / player.maxAmmo;
             drawString('AMMO', 32, frameY);
             drawTexture(32, frameY + 7, 544, 208, 32, 12);
             drawTexture(34, frameY + 9, 552, 224, 8, 8, null, Math.round(ammoPercent * 28), 8);
-            drawString(entity.ammo.toString(), 32, frameY + 10);
+            drawString(entity.ammo + '/' + entity.maxAmmo, 32, frameY + 10);
 
             const xpPercent = player.xp / player.maxXp;
-            drawString('XP', 64, frameY);
+            drawString('LEVEL ' + player.level, 64, frameY);
             drawTexture(64, frameY + 7, 544, 208, 32, 12);
             drawTexture(66, frameY + 9, 568, 224, 8, 8, null, Math.round(xpPercent * 28), 8);
-            drawString(entity.xp.toString(), 64, frameY + 10);
+            drawString(entity.xp + '/' + entity.maxXp, 64, frameY + 10);
 
         } else {
             const hpPercent = entity.hp / entity.maxHp;
             drawString(entity.name, 0, frameY);
             drawTexture(0, frameY + 7, 544, 208, 32, 12);
             drawTexture(2, frameY + 9, 560, 224, 8, 8, null, Math.round(hpPercent * 28), 8);
-            drawString(entity.hp.toString(), 0, frameY + 10);
+            drawString(entity.hp + '/' + entity.maxHp, 0, frameY + 10);
         }
 
         frameY += 24;
