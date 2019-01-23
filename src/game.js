@@ -9,7 +9,6 @@ let currEntityIndex = 0;
 let t = 0;
 
 let player = null;
-let blaster = null;
 let entities = null;
 let items = null;
 let inventory = null;
@@ -42,18 +41,26 @@ function initEntities() {
         level: 1,
     };
 
-    blaster = {
+    const radio = {
+        entityType: ENTITY_TYPE_RADIO,
+        name: 'Radio',
+        x: player.x + 32,
+        y: player.y - 32
+    };
+
+    const blaster = {
         entityType: ENTITY_TYPE_BLASTER,
         name: 'Blaster',
         x: player.x + 32,
         y: player.y + 32
-    }
+    };
 
     entities = [
         player
     ];
 
     items = [
+        radio,
         blaster
     ];
 
@@ -108,6 +115,8 @@ function initEntities() {
     }
 
     map.computeFov((player.x / TILE_SIZE) | 0, (player.y / TILE_SIZE) | 0, 12);
+
+    startQuest(quests[4]);
 }
 
 const effects = [];

@@ -28,6 +28,13 @@ const quests = [
         entityType: ENTITY_TYPE_BLUE_KEYCARD,
         successDialogIndex: 9
     },
+    {
+        // 4
+        title: 'Pick up radio',
+        objectiveType: 'item',
+        entityType: ENTITY_TYPE_RADIO,
+        successDialogIndex: 0
+    },
 ];
 
 const questLog = [];
@@ -40,7 +47,7 @@ function startQuest(quest) {
 function finishQuest(quest) {
     addMessage('Quest complete: ' + quest.title, 0xFFFF00FF);
 
-    if (quest.successDialogIndex) {
+    if (quest.successDialogIndex !== undefined) {
         showDialog(quest.successDialogIndex);
     }
 }

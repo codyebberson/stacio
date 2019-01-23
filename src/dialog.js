@@ -89,7 +89,7 @@ const dialogs = [
 ];
 
 const dialogState = {
-    visible: true,
+    visible: false,
     index: 0,
     startTime: 0,
     selectedIndex: 0
