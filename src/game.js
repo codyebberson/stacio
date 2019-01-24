@@ -1,8 +1,5 @@
 
-let canvas = null;
 let gl = null;
-let imageWidth = 0;
-let imageHeight = 0;
 let animFrame = 0;
 let animDelay = 0;
 let currEntityIndex = 0;
@@ -18,6 +15,9 @@ let selectedEntity = null;
 let talentsOpen = false;
 let cursorMode = false;
 let cursor = { x: 0, y: 0, tx: 0, ty: 0 };
+let keyboard = null;
+let keys = null;
+let mouse = null;
 
 function initEntities() {
     player = {
@@ -126,59 +126,13 @@ const effects = [];
 let screenShakeCountdown = 0;
 
 function main() {
-    let canvases = document.querySelectorAll('canvas');
-    canvas = canvases[0];
-    gl = canvas.getContext("webgl", { alpha: false, antialias: false });
-    if (!gl) {
-        return;
-    }
-
-    gl.disable(gl.DEPTH_TEST);
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-
-    initSprites();
-
-    // spriteTexture = createTexture('img/graphics.png');
-
-    initMap();
-    initEntities();
-
-    map.initGl(gl);
-
-    window.addEventListener('resize', handleResizeEvent, false);
-    handleResizeEvent();
-
-    initMouse(canvas);
+    const app = new wglt.Application(document.querySelector('canvas'));
+    keyboard = app.keyboard;
+    keys = app.keys;
+    gl = app.gl;
+    mouse = app.mouse;
 
     requestAnimationFrame(update);
-}
-
-/**
- * Handles window resize events.
- * Updates canvas size.
- */
-function handleResizeEvent() {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    let scale = 1.0;
-
-    if (width > height) {
-        scale = Math.max(1, Math.min(Math.floor(width / 256.0), Math.floor(height / 144.0)));
-    } else {
-        scale = Math.max(1, Math.min(Math.floor(width / 144.0), Math.floor(height / 256.0)));
-    }
-
-    SCREEN_WIDTH = Math.round(width / scale);
-    SCREEN_HEIGHT = Math.round(height / scale);
-    SCREEN_ASPECT_RATIO = SCREEN_WIDTH / SCREEN_HEIGHT;
-
-    canvas.width = SCREEN_WIDTH;
-    canvas.height = SCREEN_HEIGHT;
-    canvas.style.left = '0';
-    canvas.style.top = '0';
-    canvas.style.width = width + 'px';
-    canvas.style.height = height + 'px';
 }
 
 function handlePlayerInput() {
@@ -588,8 +542,8 @@ function tryDialogOption(index) {
 }
 
 function update() {
-    updateKeys();
-    updateMouse();
+    keyboard.update();
+    mouse.update();
 
     if (dialogState.visible) {
         handleDialogInput();

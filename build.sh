@@ -41,6 +41,7 @@ java -jar ~/.closure-compiler/closure-compiler-v20190106.jar \
     --js lib/tilemap.js \
     --js lib/fov.js \
     --js lib/sprites.js \
+    --js lib/app.js \
     --js src/constants.js \
     --js src/maps.js \
     --js src/dialog.js \
