@@ -139,7 +139,7 @@ function main() {
 
     initSprites();
 
-    spriteTexture = createTexture('img/graphics.png');
+    // spriteTexture = createTexture('img/graphics.png');
 
     initMap();
     initEntities();

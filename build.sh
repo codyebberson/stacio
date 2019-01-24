@@ -31,6 +31,7 @@ java -jar ~/.closure-compiler/closure-compiler-v20190106.jar \
     --dependency_mode LOOSE \
     --warning_level VERBOSE \
     --summary_detail_level=3 \
+    --js lib/wglt.js \
     --js lib/rect.js \
     --js lib/input.js \
     --js lib/keyboard.js \

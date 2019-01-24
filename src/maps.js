@@ -28,7 +28,7 @@ let sectorGrid = null;
 let sectorParents = null;
 
 function initMap() {
-    map = new TileMap(MAP_WIDTH, MAP_HEIGHT, MAP_LAYERS);
+    map = new wglt.TileMap(MAP_WIDTH, MAP_HEIGHT, MAP_LAYERS);
     sectors = [];
     sectorGrid = [];
     sectorParents = [];
@@ -78,7 +78,7 @@ function initMap() {
             }
         }
 
-        sector.rect = new Rect2(
+        sector.rect = new wglt.Rect(
             sector.x * SECTOR_WIDTH,
             sector.y * SECTOR_HEIGHT,
             SECTOR_WIDTH,
@@ -115,19 +115,19 @@ function initMap() {
         const rooms = sector.rooms;
 
         // Always add 4 rooms on the cardinal directions
-        const westRoom = new Rect2(sector.rect.x1 + 1, sector.rect.getCenter().y - 2, 5, 5);
+        const westRoom = new wglt.Rect(sector.rect.x1 + 1, sector.rect.getCenter().y - 2, 5, 5);
         createRoom(westRoom);
         rooms.push(westRoom);
 
-        const eastRoom = new Rect2(sector.rect.x2 - 5, sector.rect.getCenter().y - 2, 5, 5);
+        const eastRoom = new wglt.Rect(sector.rect.x2 - 5, sector.rect.getCenter().y - 2, 5, 5);
         createRoom(eastRoom);
         rooms.push(eastRoom);
 
-        const northRoom = new Rect2(sector.rect.getCenter().x - 2, sector.rect.y1 + 1, 5, 5);
+        const northRoom = new wglt.Rect(sector.rect.getCenter().x - 2, sector.rect.y1 + 1, 5, 5);
         createRoom(northRoom);
         rooms.push(northRoom);
 
-        const southRoom = new Rect2(sector.rect.getCenter().x - 2, sector.rect.y2 - 5, 5, 5);
+        const southRoom = new wglt.Rect(sector.rect.getCenter().x - 2, sector.rect.y2 - 5, 5, 5);
         createRoom(southRoom);
         rooms.push(southRoom);
 
@@ -136,7 +136,7 @@ function initMap() {
             const h = chooseBetween(ROOM_MIN_HEIGHT, ROOM_MAX_HEIGHT);
             const x = chooseBetween(sector.rect.x1 + 2, sector.rect.x2 - ROOM_MAX_WIDTH - 3);
             const y = chooseBetween(sector.rect.y1 + 2, sector.rect.y2 - ROOM_MAX_HEIGHT - 3);
-            const rect = new Rect2(x, y, w, h);
+            const rect = new wglt.Rect(x, y, w, h);
 
             let intersects = false;
             for (let i = 0; i < rooms.length; i++) {
