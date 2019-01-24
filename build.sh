@@ -31,18 +31,17 @@ java -jar ~/.closure-compiler/closure-compiler-v20190106.jar \
     --dependency_mode LOOSE \
     --warning_level VERBOSE \
     --summary_detail_level=3 \
-    --externs src/externs.js \
+    --js lib/rect.js \
+    --js lib/input.js \
+    --js lib/keyboard.js \
+    --js lib/mouse.js \
+    --js lib/path.js \
+    --js lib/glutils.js \
+    --js lib/tilemap.js \
+    --js lib/fov.js \
+    --js lib/sprites.js \
     --js src/constants.js \
-    --js src/rect.js \
-    --js src/input.js \
-    --js src/keyboard.js \
-    --js src/mouse.js \
     --js src/maps.js \
-    --js src/path.js \
-    --js src/glutils.js \
-    --js src/tilemap.js \
-    --js src/fov.js \
-    --js src/sprites.js \
     --js src/dialog.js \
     --js src/quests.js \
     --js src/game.js \
