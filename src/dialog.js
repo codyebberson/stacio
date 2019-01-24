@@ -117,16 +117,16 @@ function renderDialog() {
     const dialogY = ((SCREEN_HEIGHT - dialogHeight) / 2) | 0;
 
     // Draw the speaker avatar
-    drawTexture(dialogX + 64, dialogY, 128, 608, 32, 32);
+    app.drawTexture(dialogX + 64, dialogY, 128, 608, 32, 32);
 
     const dialog = dialogs[dialogState.index];
     const openTime = t - dialogState.startTime;
     const len = dialogState.skip ? dialog.msg.length : Math.min(dialog.msg.length, Math.floor(openTime / 2));
     const msg = dialog.msg.substr(0, len);
-    drawString(msg, dialogX, dialogY + 32);
+    app.drawString(msg, dialogX, dialogY + 32);
     if (len === dialog.msg.length) {
         for (let i = 0; i < dialog.options.length; i++) {
-            drawString(dialog.options[i].text, dialogX, dialogY + 64 + i * 16);
+            app.drawString(dialog.options[i].text, dialogX, dialogY + 64 + i * 16);
         }
     }
 }

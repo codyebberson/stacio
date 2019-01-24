@@ -1,4 +1,5 @@
 
+let app = null;
 let gl = null;
 let animFrame = 0;
 let animDelay = 0;
@@ -126,13 +127,12 @@ const effects = [];
 let screenShakeCountdown = 0;
 
 function main() {
-    const app = new wglt.Application(document.querySelector('canvas'));
+    app = new wglt.Application(document.querySelector('canvas'));
+    app.update = update;
     keyboard = app.keyboard;
     keys = app.keys;
     gl = app.gl;
     mouse = app.mouse;
-
-    requestAnimationFrame(update);
 }
 
 function handlePlayerInput() {
@@ -542,9 +542,6 @@ function tryDialogOption(index) {
 }
 
 function update() {
-    keyboard.update();
-    mouse.update();
-
     if (dialogState.visible) {
         handleDialogInput();
     } else if (talentsOpen) {
@@ -599,17 +596,10 @@ function update() {
     }
 
     render();
-    requestAnimationFrame(update);
 }
 
 function render() {
-    gl.viewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-
-    // Clear the canvas
-    gl.clearColor(0, 0, 0, 1);
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-    if (!spriteTexture || !spriteTexture.loaded) {
+    if (!app.spriteSet.spriteTexture || !app.spriteSet.spriteTexture.loaded) {
         return;
     }
 
@@ -621,11 +611,6 @@ function render() {
         viewport.y += 4 * Math.random() - 2;
     }
 
-    // Reset sprite index buffers
-    positionArrayIndex = 0;
-    texcoordArrayIndex = 0;
-    colorArrayIndex = 0;
-
     if (dialogState.visible) {
         renderDialog();
     } else {
@@ -633,75 +618,74 @@ function render() {
 
         if (talentsOpen) {
             // Draw translucent layer to darken the game
-            drawTexture(0, 0, 512, 256, 144, 144, 0x00000080, SCREEN_WIDTH, SCREEN_HEIGHT);
+            app.drawTexture(0, 0, 512, 256, 144, 144, 0x00000080, SCREEN_WIDTH, SCREEN_HEIGHT);
 
             // Draw dialog background
             const x = ((SCREEN_WIDTH - 144) / 2) | 0;
             const y = ((SCREEN_HEIGHT - 144) / 2) | 0;
-            drawTexture(x, y, 512, 256, 144, 144);
+            app.drawTexture(x, y, 512, 256, 144, 144);
 
             // Strength
 
             // Leap
-            drawTexture(x + 6 + 4, y + 5 + 4, 480, 416, 16, 16);
-            drawString('2', x + 6 + 4 + 11, y + 5 + 4 + 10, 0x00FF00FF);
+            app.drawTexture(x + 6 + 4, y + 5 + 4, 480, 416, 16, 16);
+            app.drawString('2', x + 6 + 4 + 11, y + 5 + 4 + 10, 0x00FF00FF);
 
             // Charge
-            drawTexture(x + 6 + 12 + 4, y + 5 + 24 + 4, 464, 416, 16, 16);
-            drawString('0', x + 6 + 16 + 11, y + 5 + 24 + 14, 0x00FF00FF);
+            app.drawTexture(x + 6 + 12 + 4, y + 5 + 24 + 4, 464, 416, 16, 16);
+            app.drawString('0', x + 6 + 16 + 11, y + 5 + 24 + 14, 0x00FF00FF);
 
             // Shooter
-            drawTexture(x + 6 + 12 + 4, y + 5 + 48 + 4, 624, 160, 16, 16);
-            drawString('0', x + 6 + 16 + 11, y + 5 + 48 + 14, 0x00FF00FF);
+            app.drawTexture(x + 6 + 12 + 4, y + 5 + 48 + 4, 624, 160, 16, 16);
+            app.drawString('0', x + 6 + 16 + 11, y + 5 + 48 + 14, 0x00FF00FF);
 
             // Brawler
-            drawTexture(x + 6 + 12 + 4, y + 5 + 72 + 4, 448, 416, 16, 16);
-            drawString('0', x + 6 + 16 + 11, y + 5 + 72 + 14, 0x00FF00FF);
+            app.drawTexture(x + 6 + 12 + 4, y + 5 + 72 + 4, 448, 416, 16, 16);
+            app.drawString('0', x + 6 + 16 + 11, y + 5 + 72 + 14, 0x00FF00FF);
 
             // Tech
 
             // Armorsmith
-            drawTexture(x + 52 + 4, y + 5 + 4, 336, 416, 16, 16);
-            drawString('0', x + 52 + 4 + 11, y + 5 + 4 + 10, 0x00FF00FF);
+            app.drawTexture(x + 52 + 4, y + 5 + 4, 336, 416, 16, 16);
+            app.drawString('0', x + 52 + 4 + 11, y + 5 + 4 + 10, 0x00FF00FF);
 
             // Weaponsmith
-            drawTexture(x + 52 + 12 + 4, y + 5 + 24 + 4, 336, 448, 16, 16);
-            drawString('0', x + 52 + 16 + 11, y + 5 + 24 + 14, 0x00FF00FF);
+            app.drawTexture(x + 52 + 12 + 4, y + 5 + 24 + 4, 336, 448, 16, 16);
+            app.drawString('0', x + 52 + 16 + 11, y + 5 + 24 + 14, 0x00FF00FF);
 
             // Power Saver
-            drawTexture(x + 52 + 12 + 4, y + 5 + 48 + 4, 272, 400, 16, 16);
-            drawString('0', x + 52 + 16 + 11, y + 5 + 48 + 14, 0x00FF00FF);
+            app.drawTexture(x + 52 + 12 + 4, y + 5 + 48 + 4, 272, 400, 16, 16);
+            app.drawString('0', x + 52 + 16 + 11, y + 5 + 48 + 14, 0x00FF00FF);
 
             // Hacker
-            drawTexture(x + 52 + 12 + 4, y + 5 + 72 + 4, 400, 432, 16, 16);
-            drawString('0', x + 52 + 16 + 11, y + 5 + 72 + 14, 0x00FF00FF);
+            app.drawTexture(x + 52 + 12 + 4, y + 5 + 72 + 4, 400, 432, 16, 16);
+            app.drawString('0', x + 52 + 16 + 11, y + 5 + 72 + 14, 0x00FF00FF);
 
             // Psych
 
             // Sleeper
-            drawTexture(x + 98 + 4, y + 5 + 4, 128, 354, 16, 16);
-            drawString('0', x + 98 + 4 + 11, y + 5 + 4 + 10, 0x00FF00FF);
+            app.drawTexture(x + 98 + 4, y + 5 + 4, 128, 354, 16, 16);
+            app.drawString('0', x + 98 + 4 + 11, y + 5 + 4 + 10, 0x00FF00FF);
 
             // Push
-            drawTexture(x + 98 + 12 + 4, y + 5 + 24 + 4, 592, 160, 16, 16);
-            drawString('0', x + 98 + 16 + 11, y + 5 + 24 + 14, 0x00FF00FF);
+            app.drawTexture(x + 98 + 12 + 4, y + 5 + 24 + 4, 592, 160, 16, 16);
+            app.drawString('0', x + 98 + 16 + 11, y + 5 + 24 + 14, 0x00FF00FF);
 
             // Stealth
-            drawTexture(x + 98 + 12 + 4, y + 5 + 48 + 4, 272, 400, 16, 16);
-            drawString('0', x + 98 + 16 + 11, y + 5 + 48 + 14, 0x00FF00FF);
+            app.drawTexture(x + 98 + 12 + 4, y + 5 + 48 + 4, 272, 400, 16, 16);
+            app.drawString('0', x + 98 + 16 + 11, y + 5 + 48 + 14, 0x00FF00FF);
 
             // Blocker
-            drawTexture(x + 98 + 12 + 4, y + 5 + 72 + 4, 352, 400, 16, 16);
-            drawString('0', x + 98 + 16 + 11, y + 5 + 72 + 14, 0x00FF00FF);
+            app.drawTexture(x + 98 + 12 + 4, y + 5 + 72 + 4, 352, 400, 16, 16);
+            app.drawString('0', x + 98 + 16 + 11, y + 5 + 72 + 14, 0x00FF00FF);
 
-            drawString('1: Leap 2 squares', x + 8, y + 106, 0xFFFFFFFF);
-            drawString('2: Leap 3 squares', x + 8, y + 114, 0xFFFFFFFF);
-            drawString('3: Leap 4 squares', x + 8, y + 122, 0x00FF00FF);
-            drawString('4: Leap 5 squares', x + 8, y + 130, 0x808080FF);
+            app.drawString('1: Leap 2 squares', x + 8, y + 106, 0xFFFFFFFF);
+            app.drawString('2: Leap 3 squares', x + 8, y + 114, 0xFFFFFFFF);
+            app.drawString('3: Leap 4 squares', x + 8, y + 122, 0x00FF00FF);
+            app.drawString('4: Leap 5 squares', x + 8, y + 130, 0x808080FF);
         }
     }
 
-    drawSprites();
     t++;
 }
 
@@ -719,7 +703,7 @@ function renderNormalMode() {
             tx = 688;
         }
 
-        drawTexture(highlightX, highlightY, tx, ty, 16, 16);
+        app.drawTexture(highlightX, highlightY, tx, ty, 16, 16);
     }
 
     for (let i = 0; i < items.length; i++) {
@@ -731,7 +715,7 @@ function renderNormalMode() {
         const y = item.y - viewport.y;
         const tx = 16 * (ENTITY_SPRITE_OFFSET_X[item.entityType]);
         const ty = 16 * (ENTITY_SPRITE_OFFSET_Y[item.entityType]);
-        drawTexture(x, y, tx, ty, 16, 16);
+        app.drawTexture(x, y, tx, ty, 16, 16);
     }
 
     for (let i = 0; i < entities.length; i++) {
@@ -751,9 +735,9 @@ function renderNormalMode() {
             ty = 16 * (ENTITY_SPRITE_OFFSET_Y[entity.entityType] + (animFrame % 2));
         }
         if (entity === selectedEntity) {
-            drawTexture(x, y, 720, 176, 16, 16);
+            app.drawTexture(x, y, 720, 176, 16, 16);
         }
-        drawTexture(x, y, tx, ty, 16, 16);
+        app.drawTexture(x, y, tx, ty, 16, 16);
     }
 
     for (let i = effects.length - 1; i >= 0; i--) {
@@ -763,7 +747,7 @@ function renderNormalMode() {
         const frame = Math.floor(effect.frame / 6);
         const tx = 128 + 16 * frame;
         const ty = 304;
-        drawTexture(x, y, tx, ty, 16, 16);
+        app.drawTexture(x, y, tx, ty, 16, 16);
         effect.frame++;
         if (effect.frame >= 18) {
             effects.splice(i, 1);
@@ -782,50 +766,50 @@ function renderNormalMode() {
 
         if (entity === player) {
             const hpPercent = entity.hp / entity.maxHp;
-            drawString(entity.name, 0, frameY);
-            drawTexture(0, frameY + 7, 544, 208, 32, 12);
-            drawTexture(2, frameY + 9, 544, 224, 8, 8, undefined, Math.round(hpPercent * 28));
-            drawString(entity.hp + '/' + entity.maxHp, 0, frameY + 10);
+            app.drawString(entity.name, 0, frameY);
+            app.drawTexture(0, frameY + 7, 544, 208, 32, 12);
+            app.drawTexture(2, frameY + 9, 544, 224, 8, 8, undefined, Math.round(hpPercent * 28));
+            app.drawString(entity.hp + '/' + entity.maxHp, 0, frameY + 10);
 
             const ammoPercent = player.ammo / player.maxAmmo;
-            drawString('AMMO', 32, frameY);
-            drawTexture(32, frameY + 7, 544, 208, 32, 12);
-            drawTexture(34, frameY + 9, 552, 224, 8, 8, undefined, Math.round(ammoPercent * 28));
-            drawString(entity.ammo + '/' + entity.maxAmmo, 32, frameY + 10);
+            app.drawString('AMMO', 32, frameY);
+            app.drawTexture(32, frameY + 7, 544, 208, 32, 12);
+            app.drawTexture(34, frameY + 9, 552, 224, 8, 8, undefined, Math.round(ammoPercent * 28));
+            app.drawString(entity.ammo + '/' + entity.maxAmmo, 32, frameY + 10);
 
             const xpPercent = player.xp / player.maxXp;
-            drawString('LEVEL ' + player.level, 64, frameY);
-            drawTexture(64, frameY + 7, 544, 208, 32, 12);
-            drawTexture(66, frameY + 9, 568, 224, 8, 8, undefined, Math.round(xpPercent * 28));
-            drawString(entity.xp + '/' + entity.maxXp, 64, frameY + 10);
+            app.drawString('LEVEL ' + player.level, 64, frameY);
+            app.drawTexture(64, frameY + 7, 544, 208, 32, 12);
+            app.drawTexture(66, frameY + 9, 568, 224, 8, 8, undefined, Math.round(xpPercent * 28));
+            app.drawString(entity.xp + '/' + entity.maxXp, 64, frameY + 10);
 
         } else {
             const hpPercent = entity.hp / entity.maxHp;
-            drawString(entity.name, 0, frameY);
-            drawTexture(0, frameY + 7, 544, 208, 32, 12);
-            drawTexture(2, frameY + 9, 560, 224, 8, 8, undefined, Math.round(hpPercent * 28));
-            drawString(entity.hp + '/' + entity.maxHp, 0, frameY + 10);
+            app.drawString(entity.name, 0, frameY);
+            app.drawTexture(0, frameY + 7, 544, 208, 32, 12);
+            app.drawTexture(2, frameY + 9, 560, 224, 8, 8, undefined, Math.round(hpPercent * 28));
+            app.drawString(entity.hp + '/' + entity.maxHp, 0, frameY + 10);
         }
 
         frameY += 24;
     }
 
     if (questLog.length > 0) {
-        drawString('OBJECTIVES:', SCREEN_WIDTH - 60, 0);
+        app.drawString('OBJECTIVES:', SCREEN_WIDTH - 60, 0);
         for (let i = 0; i < questLog.length; i++) {
-            drawString(questLog[i].title, SCREEN_WIDTH - 60, 8 + 8 * i);
+            app.drawString(questLog[i].title, SCREEN_WIDTH - 60, 8 + 8 * i);
         }
     }
 
     const messagesY = SCREEN_HEIGHT - TOOLBAR_HEIGHT - messages.length * 8;
     for (let i = 0; i < messages.length; i++) {
-        drawString(messages[i].text, 0, messagesY + i * 8, messages[i].color);
+        app.drawString(messages[i].text, 0, messagesY + i * 8, messages[i].color);
     }
 
     // Draw toolbar
     for (let i = 0; i < 6; i++) {
         // Draw button background
-        drawTexture(
+        app.drawTexture(
             i * TOOLBAR_BUTTON_SIZE,
             SCREEN_HEIGHT - TOOLBAR_BUTTON_SIZE,
             512, 208,
@@ -834,7 +818,7 @@ function renderNormalMode() {
         if (i === 0) {
             // Draw button
             // TODO: generalize
-            drawTexture(
+            app.drawTexture(
                 i * TOOLBAR_BUTTON_SIZE + 4,
                 SCREEN_HEIGHT - TOOLBAR_BUTTON_SIZE + 4,
                 256, 448,
