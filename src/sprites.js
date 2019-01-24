@@ -136,6 +136,9 @@ function drawChar(c, x, y, opt_color) {
  * @param {number} v The y-coordinate of the top-left corner on the sprite sheet.
  * @param {number} w The width of the sprite.
  * @param {number} h The height of the sprite.
+ * @param {number=} opt_color Optional color.
+ * @param {number=} opt_dw Optional destination width.
+ * @param {number=} opt_dh Optional destination height.
  */
 function drawTexture(x, y, u, v, w, h, opt_color, opt_dw, opt_dh) {
     if (!spriteTexture.loaded) {

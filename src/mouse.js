@@ -11,11 +11,10 @@ function initMouse(el) {
     el.addEventListener('mousemove', handleMouseEvent);
     el.addEventListener('contextmenu', handleMouseEvent);
 
-    const touchEventHandler = this.handleTouchEvent.bind(this);
-    el.addEventListener('touchstart', touchEventHandler);
-    el.addEventListener('touchend', touchEventHandler);
-    el.addEventListener('touchcancel', touchEventHandler);
-    el.addEventListener('touchmove', touchEventHandler);
+    el.addEventListener('touchstart', handleTouchEvent);
+    el.addEventListener('touchend', handleTouchEvent);
+    el.addEventListener('touchcancel', handleTouchEvent);
+    el.addEventListener('touchmove', handleTouchEvent);
 }
 
 function updateMouse() {
@@ -44,7 +43,7 @@ function handleTouchEvent(e) {
 
     if (e.touches.length > 0) {
         const touch = e.touches[0];
-        this.updatePosition(touch.clientX, touch.clientY);
+        updatePosition(touch.clientX, touch.clientY);
         mouse.down = true;
     } else {
         mouse.down = false;
@@ -63,13 +62,13 @@ function updatePosition(clientX, clientY) {
     if (rectAspectRatio - SCREEN_ASPECT_RATIO > 0.01) {
         const actualWidth = SCREEN_ASPECT_RATIO * rect.height;
         const excess = rect.width - actualWidth;
-        rect = new Rect(Math.floor(excess / 2), 0, actualWidth, rect.height);
+        rect = new Rect2(Math.floor(excess / 2), 0, actualWidth, rect.height);
     }
 
     if (rectAspectRatio - SCREEN_ASPECT_RATIO < -0.01) {
         const actualHeight = rect.width / SCREEN_ASPECT_RATIO;
         const excess = rect.height - actualHeight;
-        rect = new Rect(0, Math.floor(excess / 2), rect.width, actualHeight);
+        rect = new Rect2(0, Math.floor(excess / 2), rect.width, actualHeight);
     }
 
     const oldX = mouse.x;

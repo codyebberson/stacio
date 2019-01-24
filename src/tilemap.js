@@ -37,7 +37,12 @@ const tilemapFS =
     '   gl_FragColor.a = tile.a;' +
     '}';
 
-
+/**
+ * @constructor
+ * @param {number} x
+ * @param {number} y
+ * @param {number} tile
+ */
 function TileMapCell(x, y, tile) {
     this.x = x;
     this.y = y;
@@ -50,17 +55,11 @@ function TileMapCell(x, y, tile) {
     this.prev = null;
 }
 
-function TileMapCell(x, y, tile) {
-    this.x = x;
-    this.y = y;
-    this.tile = tile;
-    this.blocked = true;
-    this.visible = false;
-    this.g = 0;
-    this.h = 0;
-    this.prev = null;
-}
-
+/**
+ * @constructor
+ * @param {number} width
+ * @param {number} height
+ */
 function TileMapLayer(width, height) {
     this.width = width;
     this.height = height;
@@ -96,6 +95,12 @@ TileMapLayer.prototype.updateGl = function(gl) {
     gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, gl.RGBA, gl.UNSIGNED_BYTE, this.imageData);
 };
 
+/**
+ * @constructor
+ * @param {number} width
+ * @param {number} height
+ * @param {number} layerCount
+ */
 function TileMap(width, height, layerCount) {
     this.width = width;
     this.height = height;

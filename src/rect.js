@@ -1,5 +1,12 @@
 
-function Rect(x, y, w, h) {
+/**
+ * @constructor
+ * @param {number} x
+ * @param {number} y
+ * @param {number} w
+ * @param {number} h
+ */
+function Rect2(x, y, w, h) {
     this.x1 = x;
     this.y1 = y;
     this.x2 = x + w;

@@ -830,26 +830,26 @@ function renderNormalMode() {
             const hpPercent = entity.hp / entity.maxHp;
             drawString(entity.name, 0, frameY);
             drawTexture(0, frameY + 7, 544, 208, 32, 12);
-            drawTexture(2, frameY + 9, 544, 224, 8, 8, null, Math.round(hpPercent * 28), 8);
+            drawTexture(2, frameY + 9, 544, 224, 8, 8, undefined, Math.round(hpPercent * 28));
             drawString(entity.hp + '/' + entity.maxHp, 0, frameY + 10);
 
             const ammoPercent = player.ammo / player.maxAmmo;
             drawString('AMMO', 32, frameY);
             drawTexture(32, frameY + 7, 544, 208, 32, 12);
-            drawTexture(34, frameY + 9, 552, 224, 8, 8, null, Math.round(ammoPercent * 28), 8);
+            drawTexture(34, frameY + 9, 552, 224, 8, 8, undefined, Math.round(ammoPercent * 28));
             drawString(entity.ammo + '/' + entity.maxAmmo, 32, frameY + 10);
 
             const xpPercent = player.xp / player.maxXp;
             drawString('LEVEL ' + player.level, 64, frameY);
             drawTexture(64, frameY + 7, 544, 208, 32, 12);
-            drawTexture(66, frameY + 9, 568, 224, 8, 8, null, Math.round(xpPercent * 28), 8);
+            drawTexture(66, frameY + 9, 568, 224, 8, 8, undefined, Math.round(xpPercent * 28));
             drawString(entity.xp + '/' + entity.maxXp, 64, frameY + 10);
 
         } else {
             const hpPercent = entity.hp / entity.maxHp;
             drawString(entity.name, 0, frameY);
             drawTexture(0, frameY + 7, 544, 208, 32, 12);
-            drawTexture(2, frameY + 9, 560, 224, 8, 8, null, Math.round(hpPercent * 28), 8);
+            drawTexture(2, frameY + 9, 560, 224, 8, 8, undefined, Math.round(hpPercent * 28));
             drawString(entity.hp + '/' + entity.maxHp, 0, frameY + 10);
         }
 

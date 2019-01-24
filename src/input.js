@@ -1,4 +1,7 @@
 
+/**
+ * @constructor
+ */
 function Input() {
     this.down = false;
     this.downCount = 0;
