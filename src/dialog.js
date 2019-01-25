@@ -113,8 +113,8 @@ function renderDialog() {
 
     const dialogWidth = 160;
     const dialogHeight = 160;
-    const dialogX = ((SCREEN_WIDTH - dialogWidth) / 2) | 0;
-    const dialogY = ((SCREEN_HEIGHT - dialogHeight) / 2) | 0;
+    const dialogX = ((app.width - dialogWidth) / 2) | 0;
+    const dialogY = ((app.height - dialogHeight) / 2) | 0;
 
     // Draw the speaker avatar
     app.drawTexture(dialogX + 64, dialogY, 128, 608, 32, 32);
@@ -139,8 +139,8 @@ function handleDialogInput() {
 
     const dialogWidth = 160;
     const dialogHeight = 160;
-    const dialogX = ((SCREEN_WIDTH - dialogWidth) / 2) | 0;
-    const dialogY = ((SCREEN_HEIGHT - dialogHeight) / 2) | 0;
+    const dialogX = ((app.width - dialogWidth) / 2) | 0;
+    const dialogY = ((app.height - dialogHeight) / 2) | 0;
 
     if (keys[KEY_SPACE].upCount === 1) {
         dialogState.skip = true;

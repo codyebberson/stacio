@@ -210,7 +210,7 @@ function handlePlayerInput() {
     }
 
     if (mouse.down) {
-        if (mouse.y > SCREEN_HEIGHT - TOOLBAR_HEIGHT) {
+        if (mouse.y > app.height - TOOLBAR_HEIGHT) {
             // Toolbar
             if (mouse.x >= 0 && mouse.x < 32) {
                 shootButton = true;
@@ -351,8 +351,8 @@ function doAi(entity) {
 function isVisible(entity) {
     return entity.x + SPRITE_WIDTH >= viewport.x &&
         entity.y + SPRITE_HEIGHT >= viewport.y &&
-        entity.x < viewport.x + SCREEN_WIDTH &&
-        entity.y < viewport.y + SCREEN_HEIGHT &&
+        entity.x < viewport.x + app.width &&
+        entity.y < viewport.y + app.height &&
         map.isVisible((entity.x / TILE_SIZE) | 0, (entity.y / TILE_SIZE) | 0);
 }
 
@@ -610,8 +610,8 @@ function render() {
         return;
     }
 
-    viewport.x = Math.max(0, player.x - ((SCREEN_WIDTH / 2) | 0) + 8);
-    viewport.y = Math.max(0, player.y - ((SCREEN_HEIGHT / 2) | 0) + 8);
+    viewport.x = Math.max(0, player.x - ((app.width / 2) | 0) + 8);
+    viewport.y = Math.max(0, player.y - ((app.height / 2) | 0) + 8);
 
     if (screenShakeCountdown-- > 0) {
         viewport.x += 4 * Math.random() - 2;
@@ -625,11 +625,11 @@ function render() {
 
         if (talentsOpen) {
             // Draw translucent layer to darken the game
-            app.drawTexture(0, 0, 512, 256, 144, 144, 0x00000080, SCREEN_WIDTH, SCREEN_HEIGHT);
+            app.drawTexture(0, 0, 512, 256, 144, 144, 0x00000080, app.width, app.height);
 
             // Draw dialog background
-            const x = ((SCREEN_WIDTH - 144) / 2) | 0;
-            const y = ((SCREEN_HEIGHT - 144) / 2) | 0;
+            const x = ((app.width - 144) / 2) | 0;
+            const y = ((app.height - 144) / 2) | 0;
             app.drawTexture(x, y, 512, 256, 144, 144);
 
             // Strength
@@ -698,7 +698,7 @@ function render() {
 
 function renderNormalMode() {
     // Draw the tile map
-    map.draw(viewport.x, viewport.y, SCREEN_WIDTH, SCREEN_HEIGHT);
+    map.draw(viewport.x, viewport.y, app.width, app.height);
 
     if (player.target) {
         const highlightX = player.target.x * TILE_SIZE - viewport.x;
@@ -802,13 +802,13 @@ function renderNormalMode() {
     }
 
     if (questLog.length > 0) {
-        app.drawString('OBJECTIVES:', SCREEN_WIDTH - 60, 0);
+        app.drawString('OBJECTIVES:', app.width - 60, 0);
         for (let i = 0; i < questLog.length; i++) {
-            app.drawString(questLog[i].title, SCREEN_WIDTH - 60, 8 + 8 * i);
+            app.drawString(questLog[i].title, app.width - 60, 8 + 8 * i);
         }
     }
 
-    const messagesY = SCREEN_HEIGHT - TOOLBAR_HEIGHT - messages.length * 8;
+    const messagesY = app.height - TOOLBAR_HEIGHT - messages.length * 8;
     for (let i = 0; i < messages.length; i++) {
         app.drawString(messages[i].text, 0, messagesY + i * 8, messages[i].color);
     }
@@ -818,7 +818,7 @@ function renderNormalMode() {
         // Draw button background
         app.drawTexture(
             i * TOOLBAR_BUTTON_SIZE,
-            SCREEN_HEIGHT - TOOLBAR_BUTTON_SIZE,
+            app.height - TOOLBAR_BUTTON_SIZE,
             512, 208,
             TOOLBAR_BUTTON_SIZE, TOOLBAR_BUTTON_SIZE);
 
@@ -827,7 +827,7 @@ function renderNormalMode() {
             // TODO: generalize
             app.drawTexture(
                 i * TOOLBAR_BUTTON_SIZE + 4,
-                SCREEN_HEIGHT - TOOLBAR_BUTTON_SIZE + 4,
+                app.height - TOOLBAR_BUTTON_SIZE + 4,
                 256, 448,
                 16, 16);
         }
