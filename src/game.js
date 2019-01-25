@@ -135,6 +135,25 @@ function main() {
     mouse = app.mouse;
 }
 
+function selectTile(tx, ty) {
+    selectedEntity = getEntityAt(tx, ty);
+    if (selectedEntity) {
+        player.target = null;
+        player.path = null;
+        return;
+    }
+
+    const target = map.getCell(tx, ty);
+    if (target !== player.target) {
+        const playerTileX = (player.x / TILE_SIZE) | 0;
+        const playerTileY = (player.y / TILE_SIZE) | 0;
+        const source = { x: playerTileX, y: playerTileY };
+        player.target = target;
+        player.path = computePath(source, player.target, 20);
+        player.pathIndex = 0;
+    }
+}
+
 function handlePlayerInput() {
     if (player.hp <= 0) {
         player.ap = 0;
@@ -173,19 +192,20 @@ function handlePlayerInput() {
             player.target = null;
             player.path = null;
             cursorMode = false;
+            return;
 
         } else if (keys[KEY_ENTER].downCount === 1) {
             cursorMode = false;
+
+        } else if (keys[KEY_2].downCount === 1) {
+            player.x = cursor.tx * TILE_SIZE;
+            player.y = cursor.ty * TILE_SIZE;
+            player.ap = 0;
+            player.animationCount = 1;
+            cursorMode = false;
         }
 
-        const target = map.getCell(cursor.tx, cursor.ty);
-        if (target !== player.target) {
-            const source = { x: playerTileX, y: playerTileY };
-            player.target = target;
-            player.path = computePath(source, player.target, 20);
-            player.pathIndex = 0;
-        }
-
+        selectTile(cursor.tx, cursor.ty);
         return;
     }
 
@@ -197,24 +217,10 @@ function handlePlayerInput() {
             }
 
         } else {
-            // Get path to current location
-            const mouseTileX = cursor.tx;
-            const mouseTileY = cursor.ty;
-
-            selectedEntity = getEntityAt(mouseTileX, mouseTileY);
-            if (selectedEntity) {
-                player.target = null;
-                player.path = null;
-                return;
-            }
-
-            const target = map.getCell(mouseTileX, mouseTileY);
-            if (target !== player.target) {
-                const source = { x: playerTileX, y: playerTileY };
-                player.target = target;
-                player.path = computePath(source, player.target, 20);
-                player.pathIndex = 0;
-            }
+            // // Get path to current location
+            const mouseTileX = ((viewport.x + mouse.x) / TILE_SIZE) | 0;
+            const mouseTileY = ((viewport.y + mouse.y) / TILE_SIZE) | 0;
+            selectTile(mouseTileX, mouseTileY);
             return;
         }
     }
@@ -250,6 +256,7 @@ function handlePlayerInput() {
         cursor.tx = (player.x / TILE_SIZE) | 0;
         cursor.ty = (player.y / TILE_SIZE) | 0;
         cursorMode = true;
+        selectedEntity = null;
         return;
     }
 
