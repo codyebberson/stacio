@@ -9,7 +9,6 @@ let t = 0;
 let player = null;
 let entities = null;
 let items = null;
-let inventory = null;
 let messages = null;
 let viewport = null;
 let selectedEntity = null;
@@ -42,6 +41,7 @@ function initEntities() {
         xp: 0,
         maxXp: 10,
         level: 1,
+        inventory: []
     };
 
     const radio = {
@@ -66,8 +66,6 @@ function initEntities() {
         radio,
         blaster
     ];
-
-    inventory = [];
 
     messages = [];
 
@@ -300,7 +298,7 @@ function handlePlayerInput() {
 
     } else if (shoot) {
         if (selectedEntity && player.ammo > 0) {
-            addEffect(selectedEntity.x, selectedEntity.y);
+            addExplosion(selectedEntity.x, selectedEntity.y);
             player.animationCount = 36;
             takeDamage(player, selectedEntity, 5);
             player.ammo--;
@@ -411,7 +409,7 @@ function tryMoveOrAttack(entity, dx, dy, direction) {
             // Different teams, attacking
             takeDamage(entity, other, 2);
             entity.animationCount = ATTACK_COUNT;
-            addEffect(selectedEntity.x, selectedEntity.y);
+            addExplosion(entity.x, entity.y);
             return true;
         }
     }
@@ -424,6 +422,8 @@ function tryMoveOrAttack(entity, dx, dy, direction) {
 
 function takeDamage(attacker, entity, damage) {
     entity.hp -= damage;
+    addFloatingText(entity.x + 8, entity.y - 4, damage.toString(), 0xFF0000FF);
+
     if (entity.hp <= 0) {
         entity.hp = 0;
         addMessage(entity.name + ' died', 0xFF0000FF);
@@ -435,6 +435,7 @@ function takeDamage(attacker, entity, damage) {
         if (attacker.entityType === ENTITY_TYPE_PLAYER) {
             const xpGain = entity.level * 10;
             player.xp += xpGain;
+            addFloatingText(player.x + 8, player.y - 4, '+' + xpGain, 0xFF00FFFF);
             while (player.xp >= player.maxXp) {
                 player.xp -= player.maxXp;
                 player.maxXp *= 2;
@@ -474,7 +475,7 @@ function endMove(entity) {
 }
 
 function pickUpItem(item) {
-    inventory.push(item);
+    player.inventory.push(item);
     addMessage('Picked up: ' + item.name, 0x00FFFFFF);
 
     for (let i = questLog.length - 1; i >= 0; i--) {
@@ -754,26 +755,26 @@ function renderNormalMode() {
             app.drawString(entity.name, 0, frameY);
             app.drawTexture(0, frameY + 7, 544, 208, 32, 12);
             app.drawTexture(2, frameY + 9, 544, 224, 8, 8, undefined, Math.round(hpPercent * 28));
-            app.drawString(entity.hp + '/' + entity.maxHp, 0, frameY + 10);
+            app.drawString(entity.hp + '/' + entity.maxHp, 3, frameY + 10);
 
             const ammoPercent = player.ammo / player.maxAmmo;
             app.drawString('AMMO', 32, frameY);
             app.drawTexture(32, frameY + 7, 544, 208, 32, 12);
             app.drawTexture(34, frameY + 9, 552, 224, 8, 8, undefined, Math.round(ammoPercent * 28));
-            app.drawString(entity.ammo + '/' + entity.maxAmmo, 32, frameY + 10);
+            app.drawString(entity.ammo + '/' + entity.maxAmmo, 35, frameY + 10);
 
             const xpPercent = player.xp / player.maxXp;
             app.drawString('LEVEL ' + player.level, 64, frameY);
             app.drawTexture(64, frameY + 7, 544, 208, 32, 12);
             app.drawTexture(66, frameY + 9, 568, 224, 8, 8, undefined, Math.round(xpPercent * 28));
-            app.drawString(entity.xp + '/' + entity.maxXp, 64, frameY + 10);
+            app.drawString(entity.xp + '/' + entity.maxXp, 67, frameY + 10);
 
         } else {
             const hpPercent = entity.hp / entity.maxHp;
             app.drawString(entity.name, 0, frameY);
             app.drawTexture(0, frameY + 7, 544, 208, 32, 12);
             app.drawTexture(2, frameY + 9, 560, 224, 8, 8, undefined, Math.round(hpPercent * 28));
-            app.drawString(entity.hp + '/' + entity.maxHp, 0, frameY + 10);
+            app.drawString(entity.hp + '/' + entity.maxHp, 3, frameY + 10);
         }
 
         frameY += 24;
