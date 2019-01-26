@@ -45,14 +45,14 @@ function initEntities() {
     };
 
     const radio = {
-        entityType: ENTITY_TYPE_RADIO,
+        itemType: ITEM_TYPE_RADIO,
         name: 'Radio',
         x: player.x + 32,
         y: player.y - 32
     };
 
     const blaster = {
-        entityType: ENTITY_TYPE_BLASTER,
+        itemType: ITEM_TYPE_BLASTER,
         name: 'Blaster',
         x: player.x + 32,
         y: player.y + 32
@@ -81,16 +81,18 @@ function initEntities() {
         const rooms = sector.rooms;
         for (let i = 1; i < rooms.length; i++) {
             const center = rooms[i].getCenter();
-            const maxEnemies = ((sector.level / 3)) | 0 + 1;
+            const maxEnemies = ((sector.level / 3) | 0) + 1;
             for (let k = 0; k < maxEnemies; k++) {
                 const freeCoords = getClosestEmptyTile(center.x, center.y);
                 if (!freeCoords) {
                     break;
                 }
+                const entityType = chooseFromTable(SECTOR_DEFINITIONS[j].entitityTypes);
+                const name = ENTITY_TYPE_DETAILS[entityType].name;
                 entities.push({
-                    entityType: ENTITY_TYPE_ALIEN,
+                    entityType: entityType,
                     level: sector.level + 1,
-                    name: 'Alien (' + (sector.level + 1) + ')',
+                    name: name,
                     x: freeCoords.tx * TILE_SIZE,
                     y: freeCoords.ty * TILE_SIZE,
                     dx: 0,
@@ -106,7 +108,7 @@ function initEntities() {
 
             if (i === 8) {
                 items.push({
-                    entityType: ENTITY_TYPE_BLUE_KEYCARD,
+                    itemType: ITEM_TYPE_BLUE_KEYCARD,
                     name: 'Blue Key',
                     x: center.x * TILE_SIZE + 32,
                     y: center.y * TILE_SIZE + 32
@@ -400,7 +402,7 @@ function tryMoveOrAttack(entity, dx, dy, direction) {
             // Different teams, attacking
             takeDamage(entity, other, 2);
             entity.animationCount = ATTACK_COUNT;
-            addExplosion(entity.x, entity.y);
+            addExplosion(other.x, other.y);
             return true;
         }
     }
@@ -423,8 +425,35 @@ function takeDamage(attacker, entity, damage) {
             selectedEntity = null;
         }
 
+        if (entity.entityType === ENTITY_TYPE_HATCHER) {
+            addMessage(entity.name + ' spawns hatchlings', 0x008000FF);
+            for (let i = 0; i < 3; i++) {
+                const freeCoords = getClosestEmptyTile(
+                    (entity.x / TILE_SIZE) | 0,
+                    (entity.y / TILE_SIZE) | 0);
+                if (!freeCoords) {
+                    break;
+                }
+                entities.push({
+                    entityType: ENTITY_TYPE_SPIDER,
+                    level: 1,
+                    name: ENTITY_TYPE_DETAILS[ENTITY_TYPE_SPIDER].name,
+                    x: freeCoords.tx * TILE_SIZE,
+                    y: freeCoords.ty * TILE_SIZE,
+                    dx: 0,
+                    dy: 0,
+                    direction: DIRECTION_DOWN,
+                    hp: 10,
+                    maxHp: 10,
+                    ap: 1,
+                    animationCount: 0,
+                    walkSpeed: 4
+                });
+            }
+        }
+
         if (attacker.entityType === ENTITY_TYPE_PLAYER) {
-            const xpGain = entity.level * 10;
+            const xpGain = entity.level * 5;
             player.xp += xpGain;
             addFloatingText(player.x + 8, player.y - 4, '+' + xpGain, 0xFF00FFFF);
             while (player.xp >= player.maxXp) {
@@ -702,8 +731,8 @@ function renderNormalMode() {
         }
         const x = item.x - viewport.x;
         const y = item.y - viewport.y;
-        const tx = 16 * (ENTITY_SPRITE_OFFSET_X[item.entityType]);
-        const ty = 16 * (ENTITY_SPRITE_OFFSET_Y[item.entityType]);
+        const tx = 256 + 16 * (ITEM_SPRITE_OFFSETS[item.itemType].x);
+        const ty = 224 + 16 * (ITEM_SPRITE_OFFSETS[item.itemType].y);
         app.drawTexture(x, y, tx, ty, 16, 16);
     }
 
@@ -720,8 +749,8 @@ function renderNormalMode() {
             tx = 496;
             ty = 432;
         } else {
-            tx = 16 * (ENTITY_SPRITE_OFFSET_X[entity.entityType] + DIRECTION_OFFSET_X[entity.direction]);
-            ty = 16 * (ENTITY_SPRITE_OFFSET_Y[entity.entityType] + (animFrame % 2));
+            tx = 16 * (4 * ENTITY_TYPE_DETAILS[entity.entityType].x + DIRECTION_OFFSET_X[entity.direction]);
+            ty = 16 * (2 * ENTITY_TYPE_DETAILS[entity.entityType].y + (animFrame % 2)) + 16;
         }
         if (entity === selectedEntity) {
             app.drawTexture(x, y, 720, 176, 16, 16);
@@ -743,26 +772,26 @@ function renderNormalMode() {
 
         if (entity === player) {
             const hpPercent = entity.hp / entity.maxHp;
-            app.drawString(entity.name, 0, frameY);
+            app.drawString(entity.name, 1, frameY);
             app.drawTexture(0, frameY + 7, 544, 208, 32, 12);
             app.drawTexture(2, frameY + 9, 544, 224, 8, 8, undefined, Math.round(hpPercent * 28));
             app.drawString(entity.hp + '/' + entity.maxHp, 3, frameY + 10);
 
             const ammoPercent = player.ammo / player.maxAmmo;
-            app.drawString('AMMO', 32, frameY);
+            app.drawString('AMMO', 33, frameY);
             app.drawTexture(32, frameY + 7, 544, 208, 32, 12);
             app.drawTexture(34, frameY + 9, 552, 224, 8, 8, undefined, Math.round(ammoPercent * 28));
             app.drawString(entity.ammo + '/' + entity.maxAmmo, 35, frameY + 10);
 
             const xpPercent = player.xp / player.maxXp;
-            app.drawString('LEVEL ' + player.level, 64, frameY);
+            app.drawString('LEVEL ' + player.level, 65, frameY);
             app.drawTexture(64, frameY + 7, 544, 208, 32, 12);
             app.drawTexture(66, frameY + 9, 568, 224, 8, 8, undefined, Math.round(xpPercent * 28));
             app.drawString(entity.xp + '/' + entity.maxXp, 67, frameY + 10);
 
         } else {
             const hpPercent = entity.hp / entity.maxHp;
-            app.drawString(entity.name, 0, frameY);
+            app.drawString(entity.name + ' [' + entity.level + ']', 1, frameY);
             app.drawTexture(0, frameY + 7, 544, 208, 32, 12);
             app.drawTexture(2, frameY + 9, 560, 224, 8, 8, undefined, Math.round(hpPercent * 28));
             app.drawString(entity.hp + '/' + entity.maxHp, 3, frameY + 10);
@@ -780,7 +809,7 @@ function renderNormalMode() {
 
     const messagesY = app.height - TOOLBAR_HEIGHT - messages.length * 8;
     for (let i = 0; i < messages.length; i++) {
-        app.drawString(messages[i].text, 0, messagesY + i * 8, messages[i].color);
+        app.drawString(messages[i].text, 1, messagesY + i * 8, messages[i].color);
     }
 
     // Draw toolbar

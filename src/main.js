@@ -47,20 +47,24 @@ function mainMenu() {
 }
 
 function credits() {
-    app.drawCenteredString('STACIO', app.center.x, 30);
+    app.drawCenteredString('STACIO', app.center.x, 20);
 
     const x = app.center.x - 40;
 
-    app.drawString('CODE AND DESIGN:', x, 60);
-    app.drawString('CODY.XYZ', x + 10, 70);
+    app.drawString('CODE AND DESIGN:', x, 40, 0x808080FF);
+    app.drawString('CODY.XYZ', x + 20, 50);
 
-    app.drawString('GRAPHICS:', x, 90);
-    app.drawString('ORYX DEISGN LAB', x + 10, 100);
-    app.drawString('oryxdesignlab.com', x + 10, 110);
+    app.drawString('GRAPHICS:', x, 60, 0x808080FF);
+    app.drawString('ORYX DEISGN LAB', x + 20, 70);
+    app.drawString('oryxdesignlab.com', x + 20, 80);
 
-    app.drawString('MUSIC:', x, 130);
-    app.drawString('ERIC MATYAS', x + 10, 140);
-    app.drawString('WWW.SOUNDIMAGE.ORG', x + 10, 150);
+    app.drawString('FONT:', x, 90, 0x808080FF);
+    app.drawString('LEXALOFFLE', x + 20, 100);
+    app.drawString('LEXALOFFLE.COM', x + 20, 110);
+
+    app.drawString('MUSIC:', x, 120, 0x808080FF);
+    app.drawString('ERIC MATYAS', x + 20, 130);
+    app.drawString('WWW.SOUNDIMAGE.ORG', x + 20, 140);
 
     if (app.keys[KEY_ENTER].downCount === 1 || app.mouse.upCount === 1) {
         app.update = mainMenu;

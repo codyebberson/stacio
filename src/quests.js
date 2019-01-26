@@ -4,7 +4,7 @@ const quests = [
         // 0
         title: 'Find blaster',
         objectiveType: 'item',
-        entityType: ENTITY_TYPE_BLASTER,
+        itemType: ITEM_TYPE_BLASTER,
         successDialogIndex: 7
     },
     {
@@ -18,21 +18,21 @@ const quests = [
         // 2
         title: 'Blue keycard',
         objectiveType: 'item',
-        entityType: ENTITY_TYPE_BLUE_KEYCARD,
+        itemType: ITEM_TYPE_BLUE_KEYCARD,
         successDialogIndex: 9
     },
     {
         // 3
         title: 'Blue door',
         objectiveType: 'item',
-        entityType: ENTITY_TYPE_BLUE_KEYCARD,
+        itemType: ITEM_TYPE_BLUE_KEYCARD,
         successDialogIndex: 9
     },
     {
         // 4
         title: 'Pick up radio',
         objectiveType: 'item',
-        entityType: ENTITY_TYPE_RADIO,
+        itemType: ITEM_TYPE_RADIO,
         successDialogIndex: 0
     },
 ];
