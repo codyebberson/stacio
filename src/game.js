@@ -122,15 +122,6 @@ function initEntities() {
 
 let screenShakeCountdown = 0;
 
-function main() {
-    app = new wglt.Application(document.querySelector('canvas'));
-    app.update = update;
-    keyboard = app.keyboard;
-    keys = app.keys;
-    gl = app.gl;
-    mouse = app.mouse;
-}
-
 function selectTile(tx, ty) {
     selectedEntity = getEntityAt(tx, ty);
     if (selectedEntity) {
@@ -812,5 +803,3 @@ function renderNormalMode() {
         }
     }
 }
-
-main();

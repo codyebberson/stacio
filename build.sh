@@ -48,4 +48,5 @@ java -jar ~/.closure-compiler/closure-compiler-v20190106.jar \
     --js src/quests.js \
     --js src/effects.js \
     --js src/game.js \
+    --js src/main.js \
     --js_output_file dist/stacio.min.js

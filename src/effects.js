@@ -12,6 +12,15 @@ function addFloatingText(x, y, str, color) {
     addEffect(EFFECT_TYPE_TEXT, x, y, 40, str, color);
 }
 
+/**
+ * Adds an effect to the effects queue.
+ * @param {number} effectType
+ * @param {number} x
+ * @param {number} y
+ * @param {number} duration
+ * @param {string=} str
+ * @param {string=} color
+ */
 function addEffect(effectType, x, y, duration, str, color) {
     effects.push({
         effectType: effectType,
