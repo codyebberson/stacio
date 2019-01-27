@@ -60,6 +60,8 @@ const SECTOR_DEFINITIONS = [
         roomMaxWidth: 12,
         roomMinHeight: 5,
         roomMaxHeight: 8,
+        minEntities: 0,
+        maxEntities: 1,
         floorTiles: [
             [TILE_STEEL_FLOOR_1, 0.33],
             [TILE_STEEL_FLOOR_2, 0.33],
@@ -83,6 +85,8 @@ const SECTOR_DEFINITIONS = [
         roomMaxWidth: 12,
         roomMinHeight: 5,
         roomMaxHeight: 8,
+        minEntities: 0,
+        maxEntities: 2,
         floorTiles: [
             [TILE_STEEL_FLOOR_1, 0.33],
             [TILE_STEEL_FLOOR_2, 0.33],
@@ -112,6 +116,8 @@ const SECTOR_DEFINITIONS = [
         roomMaxWidth: 12,
         roomMinHeight: 5,
         roomMaxHeight: 8,
+        minEntities: 1,
+        maxEntities: 2,
         floorTiles: [
             [TILE_STEEL_FLOOR_1, 0.33],
             [TILE_STEEL_FLOOR_2, 0.33],
@@ -142,6 +148,8 @@ const SECTOR_DEFINITIONS = [
         roomMaxWidth: 12,
         roomMinHeight: 5,
         roomMaxHeight: 8,
+        minEntities: 1,
+        maxEntities: 2,
         floorTiles: [
             [TILE_STEEL_FLOOR_1, 0.33],
             [TILE_STEEL_FLOOR_2, 0.33],
@@ -172,6 +180,8 @@ const SECTOR_DEFINITIONS = [
         roomMaxWidth: 12,
         roomMinHeight: 5,
         roomMaxHeight: 8,
+        minEntities: 1,
+        maxEntities: 2,
         floorTiles: [
             [TILE_STEEL_FLOOR_1, 0.33],
             [TILE_STEEL_FLOOR_2, 0.33],
@@ -185,9 +195,9 @@ const SECTOR_DEFINITIONS = [
             [TILE_GRAY_WALL_6, 0.1],
         ],
         entitityTypes: [
-            [ENTITY_TYPE_SPIDER, 0.333],
-            [ENTITY_TYPE_HATCHER, 0.333],
-            [ENTITY_TYPE_SLIMER, 0.333],
+            [ENTITY_TYPE_ALIEN, 0.5],
+            [ENTITY_TYPE_HATCHER, 0.25],
+            [ENTITY_TYPE_SLIMER, 0.25],
         ]
     },
     {
@@ -197,6 +207,8 @@ const SECTOR_DEFINITIONS = [
         roomMaxWidth: 12,
         roomMinHeight: 5,
         roomMaxHeight: 8,
+        minEntities: 1,
+        maxEntities: 3,
         floorTiles: [
             [TILE_STEEL_FLOOR_1, 0.33],
             [TILE_STEEL_FLOOR_2, 0.33],
@@ -215,9 +227,9 @@ const SECTOR_DEFINITIONS = [
             [TILE_ORANGE_WALL_6, 0.1],
         ],
         entitityTypes: [
-            [ENTITY_TYPE_SPIDER, 0.333],
-            [ENTITY_TYPE_HATCHER, 0.333],
-            [ENTITY_TYPE_SLIMER, 0.333],
+            [ENTITY_TYPE_ALIEN, 0.5],
+            [ENTITY_TYPE_HATCHER, 0.25],
+            [ENTITY_TYPE_SLIMER, 0.25],
         ]
     },
     {
@@ -227,6 +239,8 @@ const SECTOR_DEFINITIONS = [
         roomMaxWidth: 12,
         roomMinHeight: 5,
         roomMaxHeight: 8,
+        minEntities: 1,
+        maxEntities: 3,
         floorTiles: [
             [TILE_STEEL_FLOOR_1, 0.33],
             [TILE_STEEL_FLOOR_2, 0.33],
@@ -240,9 +254,9 @@ const SECTOR_DEFINITIONS = [
             [TILE_GRAY_WALL_6, 0.1],
         ],
         entitityTypes: [
-            [ENTITY_TYPE_SPIDER, 0.333],
-            [ENTITY_TYPE_HATCHER, 0.333],
-            [ENTITY_TYPE_SLIMER, 0.333],
+            [ENTITY_TYPE_ALIEN, 0.5],
+            [ENTITY_TYPE_HATCHER, 0.25],
+            [ENTITY_TYPE_SLIMER, 0.25],
         ]
     },
     {
@@ -252,6 +266,8 @@ const SECTOR_DEFINITIONS = [
         roomMaxWidth: 12,
         roomMinHeight: 5,
         roomMaxHeight: 8,
+        minEntities: 1,
+        maxEntities: 3,
         floorTiles: [
             [TILE_STEEL_FLOOR_1, 0.33],
             [TILE_STEEL_FLOOR_2, 0.33],
@@ -270,64 +286,67 @@ const SECTOR_DEFINITIONS = [
             [TILE_ORANGE_WALL_6, 0.1],
         ],
         entitityTypes: [
-            [ENTITY_TYPE_SPIDER, 0.333],
-            [ENTITY_TYPE_HATCHER, 0.333],
-            [ENTITY_TYPE_SLIMER, 0.333],
+            [ENTITY_TYPE_ALIEN, 0.5],
+            [ENTITY_TYPE_FLOATER, 0.3],
+            [ENTITY_TYPE_HATCHER, 0.1],
+            [ENTITY_TYPE_SLIMER, 0.1],
         ]
     },
     {
         // 8: Sector 9
-        roomCount: 10,
+        roomCount: 8,
         roomMinWidth: 5,
         roomMaxWidth: 12,
         roomMinHeight: 5,
         roomMaxHeight: 8,
+        minEntities: 2,
+        maxEntities: 4,
         floorTiles: [
             [TILE_STEEL_FLOOR_1, 0.33],
             [TILE_STEEL_FLOOR_2, 0.33],
             [TILE_STEEL_FLOOR_3, 0.33],
         ],
         wallTiles: [
-            [TILE_GRAY_WALL_1, 0.6],
-            [TILE_GRAY_WALL_2, 0.1],
-            [TILE_GRAY_WALL_3, 0.1],
-            [TILE_GRAY_WALL_4, 0.1],
-            [TILE_GRAY_WALL_6, 0.1],
+            [TILE_WHITE_WALL_1, 0.6],
+            [TILE_WHITE_WALL_2, 0.1],
+            [TILE_WHITE_WALL_3, 0.1],
+            [TILE_WHITE_WALL_4, 0.1],
+            [TILE_WHITE_WALL_6, 0.1],
         ],
         entitityTypes: [
-            [ENTITY_TYPE_SPIDER, 0.333],
-            [ENTITY_TYPE_HATCHER, 0.333],
-            [ENTITY_TYPE_SLIMER, 0.333],
+            [ENTITY_TYPE_ALIEN, 0.5],
+            [ENTITY_TYPE_CLONER, 0.3],
+            [ENTITY_TYPE_HATCHER, 0.1],
+            [ENTITY_TYPE_SLIMER, 0.1],
         ]
     },
     {
         // 9: Sector 10
         roomCount: 5,
-        roomMinWidth: 10,
-        roomMaxWidth: 12,
-        roomMinHeight: 8,
-        roomMaxHeight: 8,
+        roomMinWidth: 20,
+        roomMaxWidth: 25,
+        roomMinHeight: 10,
+        roomMaxHeight: 15,
+        minEntities: 8,
+        maxEntities: 12,
         floorTiles: [
             [TILE_STEEL_FLOOR_1, 0.33],
             [TILE_STEEL_FLOOR_2, 0.33],
             [TILE_STEEL_FLOOR_3, 0.33],
         ],
         wallTiles: [
-            [TILE_GRAY_WALL_1, 0.1],
-            [TILE_GRAY_WALL_2, 0.1],
-            [TILE_GRAY_WALL_3, 0.1],
-            [TILE_GRAY_WALL_4, 0.1],
-            [TILE_GRAY_WALL_6, 0.1],
-            [TILE_ORANGE_WALL_1, 0.1],
-            [TILE_ORANGE_WALL_2, 0.1],
-            [TILE_ORANGE_WALL_3, 0.1],
-            [TILE_ORANGE_WALL_4, 0.1],
-            [TILE_ORANGE_WALL_6, 0.1],
+            [TILE_WHITE_WALL_1, 0.2],
+            [TILE_WHITE_WALL_2, 0.2],
+            [TILE_WHITE_WALL_3, 0.2],
+            [TILE_WHITE_WALL_4, 0.2],
+            [TILE_WHITE_WALL_6, 0.2],
         ],
         entitityTypes: [
-            [ENTITY_TYPE_SPIDER, 0.333],
-            [ENTITY_TYPE_HATCHER, 0.333],
-            [ENTITY_TYPE_SLIMER, 0.333],
+            [ENTITY_TYPE_QUEEN, 0.5],
+            [ENTITY_TYPE_ALIEN, 0.15],
+            [ENTITY_TYPE_FLOATER, 0.15],
+            [ENTITY_TYPE_CLONER, 0.15],
+            [ENTITY_TYPE_HATCHER, 0.05],
         ]
     },
 ];
@@ -425,24 +444,28 @@ function initMap() {
     }
 
     for (let j = 0; j < sectors.length; j++) {
-        const sectorDef = SECTOR_DEFINITIONS[0];
+        const sectorDef = SECTOR_DEFINITIONS[j];
         const sector = sectors[j];
         const rooms = sector.rooms;
 
         // Always add 4 rooms on the cardinal directions
         const westRoom = new wglt.Rect(sector.rect.x1 + 1, sector.rect.getCenter().y - 2, 5, 5);
+        westRoom.airlock = true;
         createRoom(westRoom);
         rooms.push(westRoom);
 
         const eastRoom = new wglt.Rect(sector.rect.x2 - 5, sector.rect.getCenter().y - 2, 5, 5);
+        eastRoom.airlock = true;
         createRoom(eastRoom);
         rooms.push(eastRoom);
 
         const northRoom = new wglt.Rect(sector.rect.getCenter().x - 2, sector.rect.y1 + 1, 5, 5);
+        northRoom.airlock = true;
         createRoom(northRoom);
         rooms.push(northRoom);
 
         const southRoom = new wglt.Rect(sector.rect.getCenter().x - 2, sector.rect.y2 - 5, 5, 5);
+        southRoom.airlock = true;
         createRoom(southRoom);
         rooms.push(southRoom);
 

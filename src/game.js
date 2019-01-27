@@ -82,16 +82,22 @@ function initEntities() {
 
     for (let j = 0; j < sectors.length; j++) {
         const sector = sectors[j];
+        const sectorDef = SECTOR_DEFINITIONS[j];
         const rooms = sector.rooms;
         for (let i = 1; i < rooms.length; i++) {
+            if (rooms[i].airlock) {
+                // "Airlock" rooms are the connectors between sectors
+                // No enemies in those rooms
+                continue;
+            }
             const center = rooms[i].getCenter();
-            const maxEnemies = ((sector.level / 3) | 0) + 1;
+            const maxEnemies = chooseBetween(sectorDef.minEntities, sectorDef.maxEntities + 1);
             for (let k = 0; k < maxEnemies; k++) {
                 const freeCoords = getClosestEmptyTile(center.x, center.y);
                 if (!freeCoords) {
                     break;
                 }
-                const entityType = chooseFromTable(SECTOR_DEFINITIONS[j].entitityTypes);
+                const entityType = chooseFromTable(sectorDef.entitityTypes);
                 const name = ENTITY_TYPE_DETAILS[entityType].name;
                 entities.push({
                     entityType: entityType,
@@ -247,6 +253,10 @@ function handlePlayerInput() {
         while (nextStep && nextStep.x === playerTileX && nextStep.y === playerTileY) {
             player.pathIndex++;
             nextStep = player.pathIndex < player.path.length ? player.path[player.pathIndex] : null;
+        }
+        if (nextStep && getEntityAt(nextStep.x, nextStep.y)) {
+            // Entity in the way.  Cancel the path.
+            nextStep = null;
         }
         if (!nextStep) {
             player.targetTile = null;
