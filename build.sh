@@ -32,6 +32,7 @@ java -jar ~/.closure-compiler/closure-compiler-v20190106.jar \
     --warning_level VERBOSE \
     --summary_detail_level=3 \
     --js lib/wglt.js \
+    --js lib/point.js \
     --js lib/rect.js \
     --js lib/input.js \
     --js lib/keyboard.js \
@@ -47,6 +48,7 @@ java -jar ~/.closure-compiler/closure-compiler-v20190106.jar \
     --js src/dialog.js \
     --js src/quests.js \
     --js src/effects.js \
+    --js src/abilities.js \
     --js src/game.js \
     --js src/main.js \
     --js_output_file dist/stacio.min.js

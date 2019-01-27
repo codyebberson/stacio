@@ -11,10 +11,7 @@ let entities = null;
 let items = null;
 let messages = null;
 let viewport = null;
-let selectedEntity = null;
 let talentsOpen = false;
-let cursorMode = false;
-let cursor = { x: 0, y: 0, tx: 0, ty: 0 };
 let keyboard = null;
 let keys = null;
 let mouse = null;
@@ -33,7 +30,8 @@ function initEntities() {
         ap: 1,
         animationCount: 0,
         walkSpeed: 2,
-        target: null,
+        targetTile: null,
+        targetEntity: null,
         path: null,
         pathIndex: 0,
         ammo: 100,
@@ -41,7 +39,13 @@ function initEntities() {
         xp: 0,
         maxXp: 10,
         level: 1,
-        inventory: []
+        inventory: [],
+        abilities: [
+            shootAbility,
+            leapAbility,
+        ],
+        casting: null,
+        cursor: new wglt.Point(0, 0)
     };
 
     const radio = {
@@ -74,7 +78,7 @@ function initEntities() {
         y: 0
     };
 
-    selectedEntity = null;
+    player.targetEntity = null;
 
     for (let j = 0; j < sectors.length; j++) {
         const sector = sectors[j];
@@ -125,20 +129,20 @@ function initEntities() {
 let screenShakeCountdown = 0;
 
 function selectTile(tx, ty) {
-    selectedEntity = getEntityAt(tx, ty);
-    if (selectedEntity) {
-        player.target = null;
+    player.targetEntity = getEntityAt(tx, ty);
+    if (player.targetEntity) {
+        player.targetTile = null;
         player.path = null;
         return;
     }
 
     const target = map.getCell(tx, ty);
-    if (target !== player.target) {
+    if (target !== player.targetTile) {
         const playerTileX = (player.x / TILE_SIZE) | 0;
         const playerTileY = (player.y / TILE_SIZE) | 0;
         const source = { x: playerTileX, y: playerTileY };
-        player.target = target;
-        player.path = computePath(source, player.target, 20);
+        player.targetTile = target;
+        player.path = computePath(source, player.targetTile, 20);
         player.pathIndex = 0;
     }
 }
@@ -151,62 +155,55 @@ function handlePlayerInput() {
 
     const playerTileX = (player.x / TILE_SIZE) | 0;
     const playerTileY = (player.y / TILE_SIZE) | 0;
-    let shootButton = false;
 
     if (mouse.dx !== 0 || mouse.dy !== 0) {
-        cursor.x = mouse.x;
-        cursor.y = mouse.y;
-        cursor.tx = ((viewport.x + cursor.x) / TILE_SIZE) | 0;
-        cursor.ty = ((viewport.y + cursor.y) / TILE_SIZE) | 0;
+        player.cursor.x = mouse.x;
+        player.cursor.y = mouse.y;
+        player.cursor.tx = ((viewport.x + player.cursor.x) / TILE_SIZE) | 0;
+        player.cursor.ty = ((viewport.y + player.cursor.y) / TILE_SIZE) | 0;
     }
 
-    if (cursorMode) {
+    if (player.casting) {
         if (keys[KEY_NUMPAD_2].downCount === 1 || keys[KEY_DOWN].downCount === 1) {
-            cursor.y += 16;
-            cursor.ty++;
+            player.cursor.y += 16;
+            player.cursor.ty++;
 
         } else if (keys[KEY_NUMPAD_4].downCount === 1 || keys[KEY_LEFT].downCount === 1) {
-            cursor.x -= 16;
-            cursor.tx--;
+            player.cursor.x -= 16;
+            player.cursor.tx--;
 
         } else if (keys[KEY_NUMPAD_6].downCount === 1 || keys[KEY_RIGHT].downCount === 1) {
-            cursor.x += 16;
-            cursor.tx++;
+            player.cursor.x += 16;
+            player.cursor.tx++;
 
         } else if (keys[KEY_NUMPAD_8].downCount === 1 || keys[KEY_UP].downCount === 1) {
-            cursor.y -= 16;
-            cursor.ty--;
+            player.cursor.y -= 16;
+            player.cursor.ty--;
 
         } else if (keys[KEY_ESCAPE].downCount === 1) {
-            player.target = null;
+            player.targetTile = null;
             player.path = null;
-            cursorMode = false;
+            player.casting = null;
             return;
 
-        } else if (keys[KEY_ENTER].downCount === 1) {
-            cursorMode = false;
+        } else if (keys[KEY_ENTER].downCount === 1 || mouse.upCount === 1) {
+            selectTile(player.cursor.tx, player.cursor.ty);
 
-        } else if (keys[KEY_2].downCount === 1) {
-            player.x = cursor.tx * TILE_SIZE;
-            player.y = cursor.ty * TILE_SIZE;
-            player.ap = 0;
-            player.animationCount = 1;
-            cursorMode = false;
+            const ability = player.casting;
+            if (ability.onCast) {
+                ability.onCast(player, player.targetTile, player.targetEntity);
+            }
+            player.casting = null;
+            player.targetTile = null;
+            player.targetEntity = null;
+            player.path = null;
         }
-
-        selectTile(cursor.tx, cursor.ty);
         return;
     }
 
     if (mouse.down) {
-        if (mouse.y > app.height - TOOLBAR_HEIGHT) {
-            // Toolbar
-            if (mouse.x >= 0 && mouse.x < 32) {
-                shootButton = true;
-            }
-
-        } else {
-            // // Get path to current location
+        if (mouse.y < app.height - TOOLBAR_HEIGHT) {
+            // Get path to current location
             const mouseTileX = ((viewport.x + mouse.x) / TILE_SIZE) | 0;
             const mouseTileY = ((viewport.y + mouse.y) / TILE_SIZE) | 0;
             selectTile(mouseTileX, mouseTileY);
@@ -215,7 +212,7 @@ function handlePlayerInput() {
     }
 
     if (keys[KEY_TAB].downCount === 1) {
-        const startIndex = selectedEntity ? entities.indexOf(selectedEntity) : 0;
+        const startIndex = player.targetEntity ? entities.indexOf(player.targetEntity) : 0;
         let nextIndex = startIndex + 1;
         while (nextIndex === 0 ||
             nextIndex >= entities.length ||
@@ -232,20 +229,10 @@ function handlePlayerInput() {
             }
         }
         if (nextIndex > 0) {
-            selectedEntity = entities[nextIndex];
+            player.targetEntity = entities[nextIndex];
         } else {
-            selectedEntity = null;
+            player.targetEntity = null;
         }
-        return;
-    }
-
-    if (keys[KEY_ENTER].downCount === 1) {
-        cursor.x = player.x - viewport.x;
-        cursor.y = player.y - viewport.y;
-        cursor.tx = (player.x / TILE_SIZE) | 0;
-        cursor.ty = (player.y / TILE_SIZE) | 0;
-        cursorMode = true;
-        selectedEntity = null;
         return;
     }
 
@@ -262,7 +249,7 @@ function handlePlayerInput() {
             nextStep = player.pathIndex < player.path.length ? player.path[player.pathIndex] : null;
         }
         if (!nextStep) {
-            player.target = null;
+            player.targetTile = null;
             player.path = null;
         }
     }
@@ -272,7 +259,6 @@ function handlePlayerInput() {
     const right = keys[KEY_NUMPAD_6].down || keys[KEY_RIGHT].down || (nextStep && nextStep.x > playerTileX);
     const up = keys[KEY_NUMPAD_8].down || keys[KEY_UP].down || (nextStep && nextStep.y < playerTileY);
     const wait = keys[KEY_NUMPAD_5].down;
-    const shoot = keys[KEY_1].downCount === 1 || shootButton;
 
     if (down) {
         tryMoveOrAttack(player, 0, player.walkSpeed, DIRECTION_DOWN);
@@ -288,13 +274,23 @@ function handlePlayerInput() {
 
     } else if (up) {
         tryMoveOrAttack(player, 0, -player.walkSpeed, DIRECTION_UP);
+    }
 
-    } else if (shoot) {
-        if (selectedEntity && player.ammo > 0) {
-            addExplosion(selectedEntity.x, selectedEntity.y);
-            player.animationCount = 36;
-            takeDamage(player, selectedEntity, 5);
-            player.ammo--;
+    for (let i = 0; i < player.abilities.length; i++) {
+        const ability = player.abilities[i];
+        if (keys[KEY_1 + i].downCount === 1 ||
+            (app.mouse.upCount === 1 &&
+                isMouseInRect(TOOLBAR_BUTTON_SIZE * i, app.height - TOOLBAR_BUTTON_SIZE, TOOLBAR_BUTTON_SIZE, TOOLBAR_BUTTON_SIZE))) {
+
+            if (player.targetEntity) {
+                ability.onCast(player, player.targetTile, player.targetEntity);
+            } else {
+                player.casting = ability;
+                player.cursor.x = player.x - viewport.x;
+                player.cursor.y = player.y - viewport.y;
+                player.cursor.tx = ((viewport.x + player.cursor.x) / TILE_SIZE) | 0;
+                player.cursor.ty = ((viewport.y + player.cursor.y) / TILE_SIZE) | 0;
+            }
         }
     }
 }
@@ -421,8 +417,8 @@ function takeDamage(attacker, entity, damage) {
         entity.hp = 0;
         addMessage(entity.name + ' died', 0xFF0000FF);
 
-        if (entity === selectedEntity) {
-            selectedEntity = null;
+        if (entity === player.targetEntity) {
+            player.targetEntity = null;
         }
 
         if (entity.entityType === ENTITY_TYPE_HATCHER) {
@@ -711,16 +707,24 @@ function renderNormalMode() {
     // Draw the tile map
     map.draw(viewport.x, viewport.y, app.width, app.height);
 
-    if (player.target) {
-        const highlightX = player.target.x * TILE_SIZE - viewport.x;
-        const highlightY = player.target.y * TILE_SIZE - viewport.y;
+    if (player.targetTile) {
+        const highlightX = player.targetTile.x * TILE_SIZE - viewport.x;
+        const highlightY = player.targetTile.y * TILE_SIZE - viewport.y;
 
         let tx = 640;
         let ty = 176;
-        if (map.isSolid(player.target.x, player.target.y)) {
+        if (map.isSolid(player.targetTile.x, player.targetTile.y)) {
             tx = 688;
         }
 
+        app.drawTexture(highlightX, highlightY, tx, ty, 16, 16);
+    }
+
+    if (player.casting) {
+        const highlightX = player.cursor.x;
+        const highlightY = player.cursor.y;
+        let tx = 640;
+        let ty = 144;
         app.drawTexture(highlightX, highlightY, tx, ty, 16, 16);
     }
 
@@ -752,7 +756,7 @@ function renderNormalMode() {
             tx = 16 * (4 * ENTITY_TYPE_DETAILS[entity.entityType].x + DIRECTION_OFFSET_X[entity.direction]);
             ty = 16 * (2 * ENTITY_TYPE_DETAILS[entity.entityType].y + (animFrame % 2)) + 16;
         }
-        if (entity === selectedEntity) {
+        if (entity === player.targetEntity) {
             app.drawTexture(x, y, 720, 176, 16, 16);
         }
         app.drawTexture(x, y, tx, ty, 16, 16);
@@ -821,13 +825,13 @@ function renderNormalMode() {
             512, 208,
             TOOLBAR_BUTTON_SIZE, TOOLBAR_BUTTON_SIZE);
 
-        if (i === 0) {
+        if (i < player.abilities.length) {
             // Draw button
-            // TODO: generalize
+            const ability = player.abilities[i];
             app.drawTexture(
                 i * TOOLBAR_BUTTON_SIZE + 4,
                 app.height - TOOLBAR_BUTTON_SIZE + 4,
-                256, 448,
+                ability.iconCoords.x, ability.iconCoords.y,
                 16, 16);
         }
     }
