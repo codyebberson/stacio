@@ -217,6 +217,12 @@ function handlePlayerInput() {
         }
     }
 
+    if (keys[KEY_ESCAPE].downCount === 1) {
+        if (player.targetEntity) {
+            player.targetEntity = null;
+        }
+    }
+
     if (keys[KEY_TAB].downCount === 1) {
         const startIndex = player.targetEntity ? entities.indexOf(player.targetEntity) : 0;
         let nextIndex = startIndex + 1;
@@ -401,16 +407,17 @@ function tryMoveOrAttack(entity, dx, dy, direction) {
 
     const other = getEntityAt(tx, ty);
     if (other) {
-        if (entity.entityType === other.entityType) {
+        if ((entity.entityType === ENTITY_TYPE_PLAYER) === (other.entityType === ENTITY_TYPE_PLAYER)) {
             // Same team
             return false;
-        } else {
-            // Different teams, attacking
-            takeDamage(entity, other, 2);
-            entity.animationCount = ATTACK_COUNT;
-            addExplosion(other.x, other.y);
-            return true;
         }
+
+        // Different teams, attacking
+        const damage = Math.max(1, 2 + 2 * (entity.level - other.level));
+        takeDamage(entity, other, damage);
+        entity.animationCount = ATTACK_COUNT;
+        addExplosion(other.x, other.y);
+        return true;
     }
 
     entity.dx = dx;

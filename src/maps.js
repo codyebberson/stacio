@@ -60,7 +60,7 @@ const SECTOR_DEFINITIONS = [
         roomMaxWidth: 12,
         roomMinHeight: 5,
         roomMaxHeight: 8,
-        minEntities: 0,
+        minEntities: 1,
         maxEntities: 1,
         floorTiles: [
             [TILE_STEEL_FLOOR_1, 0.33],
@@ -85,7 +85,7 @@ const SECTOR_DEFINITIONS = [
         roomMaxWidth: 12,
         roomMinHeight: 5,
         roomMaxHeight: 8,
-        minEntities: 0,
+        minEntities: 1,
         maxEntities: 2,
         floorTiles: [
             [TILE_STEEL_FLOOR_1, 0.33],
