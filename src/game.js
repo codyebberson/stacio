@@ -112,7 +112,8 @@ function initEntities() {
                     maxHp: 10 + 5 * sector.level,
                     ap: 1,
                     animationCount: 0,
-                    walkSpeed: 4
+                    walkSpeed: 4,
+                    ammo: 10
                 });
             }
 
@@ -319,6 +320,12 @@ function doAi(entity) {
     }
 
     if (!isVisible(entity)) {
+        entity.ap = 0;
+        return;
+    }
+
+    if (entity.entityType === ENTITY_TYPE_ALIEN) {
+        shootAbility.onCast(entity, null, player);
         entity.ap = 0;
         return;
     }
@@ -601,7 +608,7 @@ function update() {
                     endMove(currEntity);
                 }
             }
-            if (currEntity.ap <= 0) {
+            if (currEntity.animationCount === 0 && currEntity.ap <= 0) {
                 currEntity.ap = 0;
                 nextTurn();
             }
