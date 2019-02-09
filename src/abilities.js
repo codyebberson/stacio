@@ -1,6 +1,10 @@
 
+const ABILITY_TARGET_TYPE_NONE = 1;
+const ABILITY_TARGET_TYPE_ENEMY = 2;
+const ABILITY_TARGET_TYPE_TILE = 3;
+
 const shootAbility = {
-    requiresTarget: true,
+    targetType: ABILITY_TARGET_TYPE_ENEMY,
     minRange: 1,
     maxRange: 10,
     iconCoords: new wglt.Point(256, 448),
@@ -21,7 +25,7 @@ const shootAbility = {
 };
 
 const leapAbility = {
-    requiresTarget: true,
+    targetType: ABILITY_TARGET_TYPE_TILE,
     minRange: 1,
     maxRange: 10,
     iconCoords: new wglt.Point(480, 416),
@@ -43,6 +47,32 @@ const leapAbility = {
         caster.y = targetTile.y * TILE_SIZE;
         caster.ap = 0;
         caster.animationCount = 1;
+    }
+};
+
+const medkitAbility = {
+    targetType: ABILITY_TARGET_TYPE_NONE,
+    iconCoords: new wglt.Point(256, 382),
+    onCast: function(caster, targetTile, targetEntity) {
+        // Search for a medkit in the caster's inventory
+        let found = false;
+        for (let i = caster.inventory.length - 1; i >= 0; i--) {
+            const item = caster.inventory[i];
+            if (item.itemType === ITEM_TYPE_MEDKIT) {
+                caster.inventory.splice(i, 1);
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            // Caster does not have a medkit
+            return;
+        }
+
+        const healthGain = 10;
+        caster.hp = Math.min(caster.maxHp, caster.hp + healthGain);
+        addFloatingText(caster.x + 8, caster.y - 4, '+' + healthGain, 0x00FF00FF);
     }
 };
 

@@ -43,6 +43,7 @@ function initEntities() {
         abilities: [
             shootAbility,
             leapAbility,
+            medkitAbility
         ],
         casting: null,
         cursor: new wglt.Point(0, 0)
@@ -50,7 +51,7 @@ function initEntities() {
 
     const radio = {
         itemType: ITEM_TYPE_RADIO,
-        name: 'Radio',
+        name: 'RADIO',
         x: player.x + 32,
         y: player.y - 32
     };
@@ -282,9 +283,16 @@ function handlePlayerInput() {
             (app.mouse.upCount === 1 &&
                 isMouseInRect(TOOLBAR_BUTTON_SIZE * i, app.height - TOOLBAR_BUTTON_SIZE, TOOLBAR_BUTTON_SIZE, TOOLBAR_BUTTON_SIZE))) {
 
-            if (player.targetEntity) {
+            if (ability.targetType === ABILITY_TARGET_TYPE_NONE) {
+                // Just cast on self
+                ability.onCast(player, null, null);
+
+            } else if (ability.targetType === ABILITY_TARGET_TYPE_ENEMY && player.targetEntity) {
+                // Cast on currently selected target
                 ability.onCast(player, player.targetTile, player.targetEntity);
+
             } else {
+                // Go into target mode
                 player.casting = ability;
                 player.cursor.x = player.x - viewport.x;
                 player.cursor.y = player.y - viewport.y;
@@ -308,9 +316,12 @@ function doAi(entity) {
     }
 
     if (entity.entityType === ENTITY_TYPE_ALIEN) {
-        shootAbility.onCast(entity, null, player);
-        entity.ap = 0;
-        return;
+        const dist = Math.hypot(player.x - entity.x, player.y - entity.y) / TILE_SIZE;
+        if (dist <= 5.0) {
+            shootAbility.onCast(entity, null, player);
+            entity.ap = 0;
+            return;
+        }
     }
 
     if (player.x < entity.x && tryMoveOrAttack(entity, -entity.walkSpeed, 0, DIRECTION_LEFT)) {
@@ -516,12 +527,6 @@ function endMove(entity) {
 function pickUpItem(item) {
     player.inventory.push(item);
     addMessage('Picked up: ' + item.name, 0x00FFFFFF);
-
-    if (item.itemType === ITEM_TYPE_HEALTHKIT) {
-        const healthGain = 10;
-        player.hp = Math.min(player.maxHp, player.hp + healthGain);
-        addFloatingText(player.x + 8, player.y - 4, '+' + healthGain, 0x00FF00FF);
-    }
 
     if (item.itemType === ITEM_TYPE_AMMO) {
         const ammoGain = 10;
@@ -780,7 +785,7 @@ function renderNormalMode() {
         if (!isVisible(entity)) {
             continue;
         }
-        if (entity.hp <= 0) {
+        if (entity !== player && entity.hp <= 0) {
             continue;
         }
         const x = entity.x - viewport.x;

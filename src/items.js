@@ -4,7 +4,7 @@ const ITEM_TYPE_YELLOW_KEY = 1;
 const ITEM_TYPE_BLUE_KEY = 2;
 const ITEM_TYPE_GREEN_KEY = 3;
 const ITEM_TYPE_RED_KEY = 4;
-const ITEM_TYPE_HEALTHKIT = 5;
+const ITEM_TYPE_MEDKIT = 5;
 const ITEM_TYPE_AMMO = 6;
 
 const ITEM_TYPES = [
@@ -40,7 +40,7 @@ const ITEM_TYPES = [
     },
     {
         // 5
-        name: 'HEALTHKIT',
+        name: 'MEDKIT',
         spriteX: 16,
         spriteY: 24
     },

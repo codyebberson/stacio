@@ -31,7 +31,7 @@ const ENTITY_TYPES = [
         spriteY: 6,
         drops: [
             [NO_DROP, 0.8],
-            [ITEM_TYPE_HEALTHKIT, 0.1],
+            [ITEM_TYPE_MEDKIT, 0.1],
             [ITEM_TYPE_AMMO, 0.1]
         ]
     },
@@ -48,7 +48,7 @@ const ENTITY_TYPES = [
         spriteY: 6,
         drops: [
             [NO_DROP, 0.8],
-            [ITEM_TYPE_HEALTHKIT, 0.1],
+            [ITEM_TYPE_MEDKIT, 0.1],
             [ITEM_TYPE_AMMO, 0.1]
         ]
     },
@@ -59,7 +59,7 @@ const ENTITY_TYPES = [
         spriteY: 8,
         drops: [
             [NO_DROP, 0.5],
-            [ITEM_TYPE_HEALTHKIT, 0.25],
+            [ITEM_TYPE_MEDKIT, 0.25],
             [ITEM_TYPE_AMMO, 0.25]
         ]
     },
@@ -70,7 +70,7 @@ const ENTITY_TYPES = [
         spriteY: 8,
         drops: [
             [NO_DROP, 0.5],
-            [ITEM_TYPE_HEALTHKIT, 0.25],
+            [ITEM_TYPE_MEDKIT, 0.25],
             [ITEM_TYPE_AMMO, 0.25]
         ]
     },
@@ -81,7 +81,7 @@ const ENTITY_TYPES = [
         spriteY: 2,
         drops: [
             [NO_DROP, 0.5],
-            [ITEM_TYPE_HEALTHKIT, 0.25],
+            [ITEM_TYPE_MEDKIT, 0.25],
             [ITEM_TYPE_AMMO, 0.25]
         ]
     },
