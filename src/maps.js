@@ -52,6 +52,29 @@ const TILE_STEEL_FLOOR_6 = 598;
 const TILE_STEEL_FLOOR_7 = 599;
 const TILE_STEEL_FLOOR_8 = 600;
 
+const TILE_NUMBER_0 = 1 + 64 * 14 + 28;
+const TILE_NUMBER_1 = 1 + 64 * 14 + 29;
+const TILE_NUMBER_2 = 1 + 64 * 14 + 30;
+const TILE_NUMBER_3 = 1 + 64 * 14 + 31;
+const TILE_NUMBER_4 = 1 + 64 * 15 + 28;
+const TILE_NUMBER_5 = 1 + 64 * 15 + 29;
+const TILE_NUMBER_6 = 1 + 64 * 15 + 30;
+const TILE_NUMBER_7 = 1 + 64 * 15 + 31;
+const TILE_NUMBER_8 = 1 + 64 * 16 + 28;
+const TILE_NUMBER_9 = 1 + 64 * 16 + 29;
+const TILE_NUMBERS = [
+    TILE_NUMBER_0,
+    TILE_NUMBER_1,
+    TILE_NUMBER_2,
+    TILE_NUMBER_3,
+    TILE_NUMBER_4,
+    TILE_NUMBER_5,
+    TILE_NUMBER_6,
+    TILE_NUMBER_7,
+    TILE_NUMBER_8,
+    TILE_NUMBER_9,
+];
+
 const SECTOR_DEFINITIONS = [
     {
         // 0: Sector 1
@@ -555,6 +578,13 @@ function createRoom(rect) {
     const y1 = rect.y1;
     const x2 = rect.x2;
     const y2 = rect.y2;
+
+    if (rect.airlock) {
+        const sector = getSectorAt(x1, y1);
+        const index = sector ? sector.level : 0;
+        map.setTile(1, x1 + 2, y1 + 2, TILE_NUMBERS[index], false);
+    }
+
     for (let y = y1; y < y2; y++) {
         for (let x = x1; x < x2; x++) {
             map.setTile(0, x, y, getFloorTile(x, y), false);

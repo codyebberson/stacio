@@ -26,6 +26,15 @@ const leapAbility = {
         if (!targetTile) {
             return;
         }
+        if (!map.isVisible(targetTile.x, targetTile.y)) {
+            return;
+        }
+        const casterTileX = (caster.x / TILE_SIZE) | 0;
+        const casterTileY = (caster.y / TILE_SIZE) | 0;
+        const dist = Math.hypot(casterTileX - targetTile.x, casterTileY - targetTile.y);
+        if (dist > 3) {
+            return;
+        }
         caster.direction = getDirection4(caster.x, caster.y, targetTile.x * TILE_SIZE, targetTile.y * TILE_SIZE);
         caster.x = targetTile.x * TILE_SIZE;
         caster.y = targetTile.y * TILE_SIZE;
