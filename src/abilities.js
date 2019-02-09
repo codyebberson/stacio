@@ -8,6 +8,9 @@ const shootAbility = {
         if (!targetEntity) {
             return;
         }
+        if (caster.ammo === undefined || caster.ammo <= 0) {
+            return;
+        }
         caster.direction = getDirection4(caster.x, caster.y, targetEntity.x, targetEntity.y);
         takeDamage(caster, targetEntity, 5);
         addProjectile(caster.x, caster.y, targetEntity.x, targetEntity.y);

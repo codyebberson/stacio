@@ -4,7 +4,7 @@ const quests = [
         // 0
         title: 'Find blaster',
         objectiveType: 'item',
-        itemType: ITEM_TYPE_BLASTER,
+        itemType: ITEM_TYPE_BLUE_KEY,
         successDialogIndex: 7
     },
     {
@@ -18,14 +18,14 @@ const quests = [
         // 2
         title: 'Blue keycard',
         objectiveType: 'item',
-        itemType: ITEM_TYPE_BLUE_KEYCARD,
+        itemType: ITEM_TYPE_BLUE_KEY,
         successDialogIndex: 9
     },
     {
         // 3
         title: 'Blue door',
         objectiveType: 'item',
-        itemType: ITEM_TYPE_BLUE_KEYCARD,
+        itemType: ITEM_TYPE_BLUE_KEY,
         successDialogIndex: 9
     },
     {

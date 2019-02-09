@@ -44,6 +44,8 @@ java -jar ~/.closure-compiler/closure-compiler-v20190106.jar \
     --js lib/sprites.js \
     --js lib/app.js \
     --js src/constants.js \
+    --js src/items.js \
+    --js src/entities.js \
     --js src/maps.js \
     --js src/dialog.js \
     --js src/quests.js \

@@ -55,20 +55,12 @@ function initEntities() {
         y: player.y - 32
     };
 
-    const blaster = {
-        itemType: ITEM_TYPE_BLASTER,
-        name: 'Blaster',
-        x: player.x + 32,
-        y: player.y + 32
-    };
-
     entities = [
         player
     ];
 
     items = [
         radio,
-        blaster
     ];
 
     messages = [];
@@ -98,7 +90,7 @@ function initEntities() {
                     break;
                 }
                 const entityType = chooseFromTable(sectorDef.entitityTypes);
-                const name = ENTITY_TYPE_DETAILS[entityType].name;
+                const name = ENTITY_TYPES[entityType].name;
                 entities.push({
                     entityType: entityType,
                     level: sector.level + 1,
@@ -114,15 +106,6 @@ function initEntities() {
                     animationCount: 0,
                     walkSpeed: 4,
                     ammo: 10
-                });
-            }
-
-            if (i === 8) {
-                items.push({
-                    itemType: ITEM_TYPE_BLUE_KEYCARD,
-                    name: 'Blue Key',
-                    x: center.x * TILE_SIZE + 32,
-                    y: center.y * TILE_SIZE + 32
                 });
             }
         }
@@ -445,6 +428,22 @@ function takeDamage(attacker, entity, damage) {
             player.targetEntity = null;
         }
 
+        const drops = ENTITY_TYPES[entity.entityType].drops;
+        if (drops) {
+            const itemType = chooseFromTable(drops);
+            if (itemType >= 0) {
+                const freeCoords = getClosestEmptyTile((entity.x / TILE_SIZE) | 0, (entity.y / TILE_SIZE) | 0);
+                if (freeCoords) {
+                    items.push({
+                        itemType: itemType,
+                        name: ITEM_TYPES[itemType].name,
+                        x: freeCoords.tx * TILE_SIZE,
+                        y: freeCoords.ty * TILE_SIZE
+                    });
+                }
+            }
+        }
+
         if (entity.entityType === ENTITY_TYPE_HATCHER) {
             addMessage(entity.name + ' spawns hatchlings', 0x008000FF);
             for (let i = 0; i < 3; i++) {
@@ -457,7 +456,7 @@ function takeDamage(attacker, entity, damage) {
                 entities.push({
                     entityType: ENTITY_TYPE_SPIDER,
                     level: 1,
-                    name: ENTITY_TYPE_DETAILS[ENTITY_TYPE_SPIDER].name,
+                    name: ENTITY_TYPES[ENTITY_TYPE_SPIDER].name,
                     x: freeCoords.tx * TILE_SIZE,
                     y: freeCoords.ty * TILE_SIZE,
                     dx: 0,
@@ -518,9 +517,21 @@ function pickUpItem(item) {
     player.inventory.push(item);
     addMessage('Picked up: ' + item.name, 0x00FFFFFF);
 
+    if (item.itemType === ITEM_TYPE_HEALTHKIT) {
+        const healthGain = 10;
+        player.hp = Math.min(player.maxHp, player.hp + healthGain);
+        addFloatingText(player.x + 8, player.y - 4, '+' + healthGain, 0x00FF00FF);
+    }
+
+    if (item.itemType === ITEM_TYPE_AMMO) {
+        const ammoGain = 10;
+        player.ammo = Math.min(player.maxAmmo, player.ammo + ammoGain);
+        addFloatingText(player.x + 8, player.y - 4, '+' + ammoGain, 0x00CCFFFF);
+    }
+
     for (let i = questLog.length - 1; i >= 0; i--) {
         const quest = questLog[i];
-        if (quest.objectiveType === 'item' && quest.entityType === item.entityType) {
+        if (quest.objectiveType === 'item' && quest.itemType === item.itemType) {
             questLog.splice(i, 1);
             finishQuest(quest);
         }
@@ -759,14 +770,17 @@ function renderNormalMode() {
         }
         const x = item.x - viewport.x;
         const y = item.y - viewport.y;
-        const tx = 256 + 16 * (ITEM_SPRITE_OFFSETS[item.itemType].x);
-        const ty = 224 + 16 * (ITEM_SPRITE_OFFSETS[item.itemType].y);
+        const tx = 16 * (ITEM_TYPES[item.itemType].spriteX);
+        const ty = 16 * (ITEM_TYPES[item.itemType].spriteY);
         app.drawTexture(x, y, tx, ty, 16, 16);
     }
 
     for (let i = 0; i < entities.length; i++) {
         const entity = entities[i];
         if (!isVisible(entity)) {
+            continue;
+        }
+        if (entity.hp <= 0) {
             continue;
         }
         const x = entity.x - viewport.x;
@@ -777,8 +791,8 @@ function renderNormalMode() {
             tx = 496;
             ty = 432;
         } else {
-            tx = 16 * (4 * ENTITY_TYPE_DETAILS[entity.entityType].x + DIRECTION_OFFSET_X[entity.direction]);
-            ty = 16 * (2 * ENTITY_TYPE_DETAILS[entity.entityType].y + (animFrame % 2)) + 16;
+            tx = 16 * (4 * ENTITY_TYPES[entity.entityType].spriteX + DIRECTION_OFFSET_X[entity.direction]);
+            ty = 16 * (2 * ENTITY_TYPES[entity.entityType].spriteY + (animFrame % 2)) + 16;
         }
         if (entity === player.targetEntity) {
             app.drawTexture(x, y, 720, 176, 16, 16);
